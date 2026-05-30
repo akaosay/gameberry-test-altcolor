@@ -1,0 +1,3510 @@
+OCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gameberry — name of the day</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  /* =========================================================
+     NAMEBERRY DESIGN LANGUAGE
+     Warm paper neutrals + bright brand trio (orange/pink/red),
+     DM Serif Display headlines + DM Sans UI, angular geometry,
+     pill chips, soft cards, gender-coded accents.
+     ========================================================= */
+  :root {
+    /* Brand trio (Nameberry logo + hero) */
+    --c1: #ff6a13;   /* orange */
+    --c2: #e74695;   /* pink   */
+    --c3: #e42126;   /* red    */
+    --c1-deep: #e85f0a;
+    --guess:      #ff6a13;   /* guess bar + button — brand orange (per girls-names-browse search bar) */
+    --guess-deep: #e85f0a;
+    --guess-soft: #ffe9d6;
+    --green: #16A34A;
+
+    /* Warm neutrals */
+    --ink:    #1A1A1A;
+    --read:   #4a4540;
+    --mid:    #6b6560;
+    --soft:   #a09890;
+    --border: #E8E3DE;
+    --snow:   #FAF9F7;
+    --white:  #FFFFFF;
+    --light:  #F2F1EC;
+
+    /* Gender coding — cool for boys, warm for girls */
+    --boy:      #06B6D4;
+    --boy-deep: #0e7490;
+    --boy-bg:   #e9f7fb;
+    --boy-line: #bfe9f3;
+    --boy-text: #0e6b86;
+
+    --girl:      #EC4D9C;   /* color sheet */
+    --girl-deep: #C43A80;   /* derived darker — name-cell hover + reveal name */
+    --girl-bg:   #FCE7F3;   /* derived tint — suggestion chip bg */
+    --girl-line: #F8C6E1;   /* derived */
+    --girl-text: #A8216B;   /* derived dark — chip text on tint */
+
+    /* Result states */
+    --exact-bg:   #84CC16;   /* color sheet */
+    --exact-text: #4D7C0F;   /* derived dark */
+    --exact-deep: #65A30D;   /* derived darker — legend swatch border */
+
+    --close-bg:   #FFCE00;   /* color sheet */
+    --close-text: #8A6D00;   /* derived dark */
+    --close-deep: #E0B400;   /* derived darker — legend swatch border */
+
+    --none-bg:    #B2B2B2;   /* color sheet */
+    --none-text:  #7A7A7A;   /* derived */
+    --none-deep:  #9A9A9A;   /* derived — legend swatch border */
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+    color: var(--ink);
+    margin: 0;
+    padding: 0 16px 64px;
+    min-height: 100vh;
+    background: var(--white);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap {
+    max-width: 660px;
+    margin: 0 auto;
+  }
+
+  /* Staggered page-load reveal */
+  @keyframes riseIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .wrap > * { animation: riseIn 0.5s ease backwards; }
+  .wrap > header   { animation-delay: 0.02s; }
+  .controls        { animation-delay: 0.10s; }
+  .input-row       { animation-delay: 0.16s; }
+  .feature-slot    { animation-delay: 0.19s; }
+  .legend          { animation-delay: 0.22s; }
+  .board-card      { animation-delay: 0.28s; }
+  .grid.header-row { animation-delay: 0.28s; }
+  #guesses         { animation-delay: 0.34s; }
+  .feedback        { animation-delay: 0.40s; }
+  footer           { animation-delay: 0.46s; }
+
+  /* ===== MASTHEAD (wordmark) ===== */
+  header.masthead {
+    text-align: center;
+    padding: 44px 0 30px;
+  }
+  .wordmark {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(46px, 11vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.022em;
+    margin: 0;
+  }
+  /* Letter colors borrowed from the original Nameberry wordmark */
+  .wordmark .w1 { color: #DD4A63; } /* pink   — Nameberry "n" */
+  .wordmark .w2 { color: #FF9525; } /* orange — "a" */
+  .wordmark .w3 { color: #B9D261; } /* lime   — "m" */
+  .wordmark .w4 { color: #86BFBF; } /* sky    — "e" */
+  .wordmark .w5 { color: #679EAA; } /* blue   — "berry" */
+  .tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--read);
+    margin-top: 16px;
+  }
+
+  /* ===== CONTROLS ===== */
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+  .guess-counter { display: inline-flex; align-items: center; gap: 8px; }
+  .dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--border);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .dot.boy {
+    background: var(--boy);
+    border-color: var(--boy-deep);
+    animation: dotPop 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .dot.girl {
+    background: var(--girl);
+    border-color: var(--girl-deep);
+    animation: dotPop 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  @keyframes dotPop { 0% { transform: scale(0.6); } 100% { transform: scale(1); } }
+
+  .control-buttons { display: flex; gap: 8px; }
+  /* Icon-only buttons (Stats, Archive). Inherit the base button's border + hover;
+     just square them up and center the glyph. */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .icon-btn svg { width: 18px; height: 18px; display: block; }
+
+  button {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    padding: 9px 18px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--ink);
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  /* Hover only on devices with a real hovering pointer — otherwise touch taps
+     leave buttons "stuck" in their hover colour until you tap elsewhere. */
+  @media (hover: hover) {
+    button:hover:not(:disabled) {
+      border-color: var(--guess);
+      color: var(--guess-deep);
+      background: var(--guess-soft);
+    }
+  }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.primary {
+    background: var(--guess);
+    color: #fff;
+    border-color: var(--guess);
+    padding: 9px 26px;
+    box-shadow: 0 8px 18px -10px rgba(255, 106, 19, 0.7);
+  }
+  @media (hover: hover) {
+    button.primary:hover:not(:disabled) {
+      background: var(--guess-deep);
+      border-color: var(--guess-deep);
+      color: #fff;
+    }
+  }
+
+  /* ===== INPUT ===== */
+  .input-row {
+    position: relative;
+    z-index: 30; /* keep the autocomplete dropdown above the guess board */
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .input-shell {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    background: var(--white);
+    border: 2px solid var(--guess);
+    border-radius: 100px;
+    padding: 0 6px 0 18px;
+    /* Only animate the focus glow. The open-state morph (squared corners + dropped
+       divider) must be instant so the bar meets the dropdown, which shows instantly. */
+    transition: box-shadow 0.2s ease;
+  }
+  .input-shell:focus-within { box-shadow: 0 0 0 3px rgba(255, 106, 19, 0.18); } /* matches girls-names-browse .search-form spec */
+  /* When the dropdown is open, square the bottom corners and hide the divider
+     border so the bar + list read as one connected capsule (Google-style). */
+  .input-shell.open {
+    border-radius: 24px 24px 0 0;
+    border-bottom-color: transparent;
+  }
+  .input-shell.open:focus-within { box-shadow: none; }
+  @keyframes inputShake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-6px); }
+    40%, 60% { transform: translateX(6px); }
+  }
+  .input-shell.shake { animation: inputShake 0.4s cubic-bezier(.36,.07,.19,.97); }
+  .input-shell > svg { color: var(--guess); flex-shrink: 0; }
+  input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 13px 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: var(--ink);
+  }
+  input::placeholder { color: var(--soft); font-style: normal; }
+
+  /* Tethered to the input shell: matches its width exactly, no gap, and the
+     shared scarlet border makes the two read as one continuous surface. */
+  .suggestions {
+    position: absolute;
+    top: 100%;
+    left: -2px;
+    right: -2px;
+    background: var(--white);
+    border: 2px solid var(--guess);
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 24px 24px;
+    max-height: 210px; /* ~4 rows, then scroll — keeps the list over the ad slot */
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+    box-shadow: 0 18px 44px -16px rgba(0, 0, 0, 0.18);
+    padding: 6px;
+  }
+  .suggestion {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 11px;
+    transition: background 0.12s;
+    margin: 2px 0;
+  }
+  .suggestion .name {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 19px;
+    color: var(--ink);
+  }
+  .suggestion .meta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .suggestion.boy  .meta { background: var(--boy-bg);  color: var(--boy-text); }
+  .suggestion.girl .meta { background: var(--girl-bg); color: var(--girl-text); }
+  /* .active is the keyboard-nav highlight (always on); :hover is guarded so it
+     doesn't stick after a touch tap. */
+  .suggestion.boy.active  { background: var(--boy-bg); }
+  .suggestion.girl.active { background: var(--girl-bg); }
+  @media (hover: hover) {
+    .suggestion.boy:hover  { background: var(--boy-bg); }
+    .suggestion.girl:hover { background: var(--girl-bg); }
+  }
+
+  /* ===== AD SLOT (placeholder) ===== */
+  /* Reserves the space directly under the search; the 4-name dropdown opens over
+     this slot, keeping the board clear. Swap for a real ad unit later.
+     NOTE: class is deliberately NOT named "ad*" — ad blockers hide elements like
+     .ad-slot / .ads / [class*="advert"], which made the placeholder vanish. */
+  .feature-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    margin-bottom: 20px;
+    background: var(--snow);
+    border: 1.5px dashed var(--border);
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--soft);
+  }
+
+  /* ===== LEGEND (pills) ===== */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mid);
+  }
+  .swatch { width: 20px; height: 16px; border-radius: 5px; display: inline-block; flex-shrink: 0; }
+  .sw-green { background: var(--exact-bg); border: 1.5px solid var(--exact-deep); }
+  .sw-amber { background: var(--close-bg); border: 1.5px solid var(--close-deep); }
+  .sw-gray  { background: var(--none-bg);  border: 1.5px solid var(--none-deep); }
+  .legend-arrows .ar { color: var(--ink); font-weight: 800; font-size: 13px; }
+
+  /* ===== GUESSES GRID ===== */
+  /* Chart-style grid: cells sit flush, separated only by 1px hairlines.
+     The 1px gaps reveal the grid container's background = the gridline colour. */
+  .grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  /* ===== BOARD CARD (frames the labels + guesses as one component) ===== */
+  .board-card {
+    position: relative;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 14px 36px -24px rgba(0, 0, 0, 0.22);
+  }
+  .board-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+    z-index: 1;
+  }
+  .board-card .guesses { padding: 0; }
+  .header-row {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: var(--mid);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    align-items: stretch;
+  }
+  /* Each label is its own white grid cell; the 1px gaps become column rules. */
+  .header-row > div {
+    background: var(--white);
+    text-align: center;
+    line-height: 1.2;
+    padding: 13px 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cell {
+    padding: 12px 6px;
+    border-radius: 0;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 58px;
+    line-height: 1.2;
+    background: var(--white);
+    border: none;
+    color: var(--ink);
+    transition: background-color 1.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  .cell-text {
+    display: inline-block;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+  }
+  @keyframes textFade { 0% { opacity: 0; } 100% { opacity: 1; } }
+  .cell.instant,
+  .cell.instant .cell-text { transition: none !important; }
+
+  .cell.name-cell {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 23px;
+    font-weight: 400;
+    text-align: center;
+    justify-content: center;
+    letter-spacing: -0.01em;
+    background: var(--white);
+    border: none;
+    color: var(--ink);
+  }
+  .cell.name-cell.boy  { background: var(--boy);  color: #fff; }
+  .cell.name-cell.girl { background: var(--girl); color: #fff; }
+  .cell.name-cell.boy,
+  .cell.name-cell.girl {
+    cursor: pointer;
+    transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+  }
+  @media (hover: hover) {
+    .cell.name-cell.boy:hover  { background: var(--boy-deep);  border-color: var(--boy-deep); }
+    .cell.name-cell.girl:hover { background: var(--girl-deep); border-color: var(--girl-deep); }
+  }
+
+  .cell.exact { background: var(--exact-bg); color: #fff; }
+  .cell.close { background: var(--close-bg); color: #fff; }
+  .cell.none  { background: var(--none-bg);  color: #fff; }
+
+  .cell.empty { background: var(--white); }
+
+  /* ===== FEEDBACK ===== */
+  .feedback {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c3);
+    margin-top: 2px;
+    min-height: 20px;
+    text-align: center;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    margin-top: 40px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--soft);
+    font-weight: 600;
+  }
+
+  /* ===== STATS MODAL ===== */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 26, 26, 0.5);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300; /* above the reveal scene (200) so Stats opens on top */
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 32px 26px;
+    max-width: 440px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 26px 64px -22px rgba(0, 0, 0, 0.35);
+  }
+  .modal::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    padding: 2px 8px;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--soft);
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  @media (hover: hover) { .modal-close:hover { color: var(--c3); background: transparent; } }
+  .modal-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 30px;
+    margin: 0 0 22px;
+    font-weight: 400;
+    text-align: center;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  /* Body paragraph for explanatory modals (e.g. the Archive preview). */
+  .modal-body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--read);
+    text-align: center;
+    margin: 0;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .stat {
+    text-align: center;
+    background: var(--snow);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 6px;
+  }
+  .stat-num {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--c1);
+  }
+  .stat:nth-child(1) .stat-num { color: var(--c1); }
+  .stat:nth-child(2) .stat-num { color: var(--green); }
+  .stat:nth-child(3) .stat-num { color: var(--c2); }
+  .stat:nth-child(4) .stat-num { color: var(--c3); }
+  .stat-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--soft);
+    margin-top: 5px;
+    font-weight: 700;
+  }
+  .stats-note {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--soft);
+    text-align: center;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+
+  /* ===== REVEAL SCENE (end-game overlay) ===== */
+  /* Wordle-style overlay: a dimmed scrim over the finished board (still visible
+     behind), with the result panel rising in on top. Scrolls if the panel is tall. */
+  .reveal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(26, 26, 26, 0.5);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    display: none;
+    overflow-y: auto;
+    padding: 52px 16px 64px;
+  }
+  .reveal.open { display: block; }
+  .reveal.open .reveal-inner { animation: revealIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  @keyframes revealIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+  /* The result panel — a white sheet floating above the dimmed board. */
+  .reveal-inner {
+    position: relative;
+    max-width: 540px;
+    margin: 0 auto;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    padding: 42px 34px 28px;
+    box-shadow: 0 26px 64px -22px rgba(0, 0, 0, 0.45);
+  }
+  .reveal.open .reveal-inner > * { animation: riseIn 0.5s ease backwards; }
+  .reveal.open .reveal-eyebrow { animation-delay: 0.10s; }
+  .reveal.open .reveal-name    { animation-delay: 0.16s; }
+  .reveal.open .reveal-meta    { animation-delay: 0.24s; }
+  .reveal.open .reveal-card    { animation-delay: 0.32s; }
+  .reveal.open .reveal-cta     { animation-delay: 0.42s; }
+
+  .reveal-eyebrow {
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+  .reveal-eyebrow.win  { color: var(--green); }
+  .reveal-eyebrow.lose { color: var(--c3); }
+
+  .reveal-name {
+    text-align: center;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(48px, 12vw, 76px);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin-top: 10px;
+  }
+  .reveal-name.boy  { color: var(--boy-deep); }
+  .reveal-name.girl { color: var(--girl-deep); }
+
+  .reveal-meta {
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    color: var(--soft);
+    margin-top: 12px;
+  }
+  .reveal-meta .rank {
+    color: var(--c1);
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 17px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0 3px;
+  }
+
+  /* Editorial info card — TEST COPY. Wire origin/meaning/blurb/similar names to
+     the name database + article links in the final version. */
+  .reveal-card {
+    position: relative;
+    margin-top: 28px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    padding: 26px 24px 22px;
+    box-shadow: 0 14px 36px -24px rgba(0, 0, 0, 0.22);
+  }
+  .reveal-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+  }
+  .rc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 22px;
+  }
+  .rc-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--soft);
+    margin-bottom: 4px;
+  }
+  .rc-value {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 19px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .rc-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--read);
+    margin: 20px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .rc-similar { margin-top: 18px; }
+  .rc-similar-label {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--soft);
+    margin-bottom: 10px;
+  }
+  .rc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rc-chip {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--read);
+    text-decoration: none;
+    background: var(--snow);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 14px;
+    transition: all 0.15s ease;
+  }
+  @media (hover: hover) { .rc-chip:hover { border-color: var(--c2); color: var(--c2); background: var(--white); } }
+
+  /* Account prompt + links */
+  .reveal-cta {
+    margin-top: 28px;
+    text-align: center;
+    background: var(--snow);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 24px 24px;
+  }
+  .reveal-thanks {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--ink);
+  }
+  .reveal-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--mid);
+    max-width: 360px;
+    margin: 10px auto 20px;
+  }
+  .reveal-create {
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    background: var(--guess);
+    border: 1.5px solid var(--guess);
+    border-radius: 100px;
+    padding: 13px 32px;
+    box-shadow: 0 8px 18px -10px rgba(255, 106, 19, 0.7);
+    transition: all 0.15s ease;
+  }
+  @media (hover: hover) { .reveal-create:hover { background: var(--guess-deep); border-color: var(--guess-deep); } }
+  .reveal-links {
+    margin-top: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .reveal-links a { color: var(--read); text-decoration: none; }
+  @media (hover: hover) { .reveal-links a:hover { color: var(--c3); } }
+  .reveal-links .reveal-dot { color: var(--soft); margin: 0 10px; }
+
+  /* Corner X — sits in the result panel's top-right (like the stats modal close). */
+  .reveal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    padding: 2px 8px;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--soft);
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  @media (hover: hover) { .reveal-close:hover { color: var(--c3); background: transparent; } }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 600px) {
+    body { padding: 0 12px 44px; }
+    .wrap { max-width: 100%; }
+    header.masthead { padding: 30px 0 24px; }
+    .grid { grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr 1fr; gap: 1px; }
+    .cell { font-size: 11.5px; padding: 10px 2px; min-height: 50px; }
+    .cell.name-cell { font-size: 18px; }
+    .board-card { border-radius: 16px; }
+    .board-card .guesses { padding: 0; }
+    .header-row { font-size: 8.5px; letter-spacing: 0.04em; }
+    .header-row > div { padding: 11px 3px 10px; }
+    .legend { gap: 8px 16px; }
+    .legend-item { font-size: 11px; }
+    .dot { width: 11px; height: 11px; }
+    .guess-counter { gap: 6px; }
+    button { padding: 8px 14px; font-size: 12px; }
+    button.primary { padding: 8px 20px; }
+    .reveal-name { font-size: clamp(42px, 14vw, 60px); }
+    input[type="text"] { font-size: 16px; padding: 12px 0; }
+    .input-shell { padding-left: 14px; }
+    .suggestion .name { font-size: 17px; }
+    .reveal { padding: 36px 14px 48px; }
+    .reveal-inner { padding: 32px 20px 22px; border-radius: 18px; }
+    .reveal-card { padding: 24px 18px 20px; }
+    .rc-grid { gap: 14px 16px; }
+    .reveal-cta { padding: 24px 18px 20px; }
+  }
+  @media (max-width: 480px) {
+    .stat-num { font-size: 27px; }
+    .modal-title { font-size: 26px; }
+    .modal { padding: 28px 22px 22px; }
+    .stat { padding: 12px 4px; }
+  }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <h1 class="wordmark"><span class="w1">g</span><span class="w2">a</span><span class="w3">m</span><span class="w4">e</span><span class="w5">berry</span></h1>
+    <div class="tagline">name of the day</div>
+  </header>
+
+  <div class="controls">
+    <span class="guess-counter" id="counter" aria-label="Guesses remaining"></span>
+    <div class="control-buttons">
+      <button id="stats-btn" class="icon-btn" aria-label="Stats" title="Stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </button>
+      <button id="archive-btn" class="icon-btn" aria-label="Archive" title="Archive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="input-row">
+    <div class="input-shell">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="guess-input" placeholder="Start typing a name…" autocomplete="off" spellcheck="false" />
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+    <button class="primary" id="submit-btn">Guess</button>
+  </div>
+
+  <!-- Ad placeholder. Sits directly under the search so the autocomplete dropdown
+       (capped at 4 names) opens over THIS slot, keeping the board clear. Wire to a
+       real ad unit later. Class avoids "ad*" so ad blockers don't hide it. -->
+  <div class="feature-slot" aria-hidden="true" style="flex-direction:column;gap:10px">
+    Advertisement
+    <!-- DEV TOOL — delete this button before launch. Reloads a fresh random daily. -->
+    <button type="button" onclick="newGame()" style="background:lime;color:#000;border:2px dashed red;border-radius:0;padding:5px 9px;font:700 11px monospace;cursor:pointer;">▶ new game — dev tool</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="swatch sw-green"></span> Exact match</div>
+    <div class="legend-item"><span class="swatch sw-amber"></span> Close</div>
+    <div class="legend-item"><span class="swatch sw-gray"></span> No match</div>
+    <div class="legend-item legend-arrows"><span class="ar">↑</span> answer is higher&nbsp;&nbsp;·&nbsp;&nbsp;<span class="ar">↓</span> lower</div>
+  </div>
+
+  <div class="board-card">
+    <div class="grid header-row">
+      <div>Name</div>
+      <div>Gender</div>
+      <div>Initial</div>
+      <div>Length</div>
+      <div>Era</div>
+      <div>Rank</div>
+    </div>
+
+    <div class="guesses grid" id="guesses"></div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <footer>
+    Data: U.S. Social Security Administration, top 1000 names of 2025 (released May 2026).
+  </footer>
+</div>
+
+<!-- ===== REVEAL SCENE =====
+     End-game takeover. Header bits (eyebrow / name / meta) are populated from
+     `answer` in showStatus(). The info card + account CTA below are TEST COPY —
+     wire origin/meaning/blurb/similar-name chips and the account / stats /
+     archive links to the real backend in the final version. -->
+<div class="reveal" id="reveal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="reveal-name">
+  <div class="reveal-inner">
+    <button class="reveal-close" id="reveal-close" aria-label="Return to board">×</button>
+    <div class="reveal-eyebrow" id="reveal-eyebrow"></div>
+    <div class="reveal-name" id="reveal-name"></div>
+    <div class="reveal-meta" id="reveal-meta"></div>
+
+    <div class="reveal-card">
+      <div class="rc-grid">
+        <div class="rc-item"><div class="rc-label">Origin</div><div class="rc-value">French, Germanic</div></div>
+        <div class="rc-item"><div class="rc-label">Meaning</div><div class="rc-value">“Free one”</div></div>
+        <div class="rc-item"><div class="rc-label">Style</div><div class="rc-value">Classic, Vintage</div></div>
+        <div class="rc-item"><div class="rc-label">Pronunciation</div><div class="rc-value">test-COPY</div></div>
+      </div>
+      <p class="rc-desc">
+        Placeholder description — this is where the editorial blurb about the name
+        will live, with the kind of warm, lightly historical copy Nameberry runs:
+        notable bearers, a sentence on its trajectory, and a link through to the
+        full name page. Lorem ipsum stands in until the database is wired up.
+      </p>
+      <div class="rc-similar">
+        <span class="rc-similar-label">You might also like</span>
+        <div class="rc-chips">
+          <a href="#" class="rc-chip">Test Name</a>
+          <a href="#" class="rc-chip">Another</a>
+          <a href="#" class="rc-chip">Placeholder</a>
+          <a href="#" class="rc-chip">Sample</a>
+          <a href="#" class="rc-chip">Example</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal-cta">
+      <div class="reveal-thanks">Thanks for playing!</div>
+      <p class="reveal-sub">
+        Create a free account to save your stats, keep your streak alive, and
+        unlock the full archive of past names.
+      </p>
+      <a href="#" class="reveal-create" id="reveal-create">Create free account</a>
+      <div class="reveal-links">
+        <a href="#" id="reveal-stats-link">Stats</a>
+        <span class="reveal-dot">·</span>
+        <a href="#" id="reveal-archive-link">Archive</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+  <div class="modal">
+    <button class="modal-close" id="stats-close" aria-label="Close">×</button>
+    <h2 class="modal-title" id="stats-title">Stats</h2>
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-num" id="stat-played">0</div>
+        <div class="stat-label">Played</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-won">0</div>
+        <div class="stat-label">Won</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-winrate">—</div>
+        <div class="stat-label">Win %</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-avg">—</div>
+        <div class="stat-label">Avg Guesses</div>
+      </div>
+    </div>
+    <div class="stats-note">Current session only. Future versions will persist between sessions.</div>
+  </div>
+</div>
+
+<!-- Archive preview. Explains what the Archive button will eventually do so testers
+     aren't clicking a dead button. Replace with the real archive UI later. -->
+<div class="modal-backdrop" id="archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-title">
+  <div class="modal">
+    <button class="modal-close" id="archive-close" aria-label="Close">×</button>
+    <h2 class="modal-title" id="archive-title">Archive</h2>
+    <p class="modal-body">
+      The Archive will let you play past daily puzzles — every previous “name of the
+      day,” browsable by date. Missed yesterday’s? Pick it from the calendar and guess
+      that name, or replay an old favorite.
+    </p>
+    <div class="stats-note">Not built yet — this is a preview of what the button will do.</div>
+  </div>
+</div>
+
+<script>
+// =========================================================================
+// NAME DATABASE — SSA Top 1000 boys + Top 1000 girls, 2025
+// Attributes: rank, sex, peakDecade (decade of most US births, 1880–2025)
+// =========================================================================
+
+const NAMES = [
+  // ===== BOYS (rank, name, sex, peakDecade) — SSA 2025 Top 1000 =====
+  { rank:    1, name: "Liam",          sex: "M", peakDecade: 2010 },
+  { rank:    2, name: "Noah",          sex: "M", peakDecade: 2010 },
+  { rank:    3, name: "Oliver",        sex: "M", peakDecade: 2010 },
+  { rank:    4, name: "Theodore",      sex: "M", peakDecade: 2020 },
+  { rank:    5, name: "Henry",         sex: "M", peakDecade: 1920 },
+  { rank:    6, name: "James",         sex: "M", peakDecade: 1950 },
+  { rank:    7, name: "Elijah",        sex: "M", peakDecade: 2010 },
+  { rank:    8, name: "Mateo",         sex: "M", peakDecade: 2020 },
+  { rank:    9, name: "William",       sex: "M", peakDecade: 1950 },
+  { rank:   10, name: "Lucas",         sex: "M", peakDecade: 2010 },
+  { rank:   11, name: "Benjamin",      sex: "M", peakDecade: 1980 },
+  { rank:   12, name: "Levi",          sex: "M", peakDecade: 2010 },
+  { rank:   13, name: "Elias",         sex: "M", peakDecade: 2020 },
+  { rank:   14, name: "Luca",          sex: "M", peakDecade: 2020 },
+  { rank:   15, name: "Jack",          sex: "M", peakDecade: 1920 },
+  { rank:   16, name: "Sebastian",     sex: "M", peakDecade: 2010 },
+  { rank:   17, name: "Hudson",        sex: "M", peakDecade: 2010 },
+  { rank:   18, name: "Samuel",        sex: "M", peakDecade: 2000 },
+  { rank:   19, name: "Leo",           sex: "M", peakDecade: 2020 },
+  { rank:   20, name: "Ezra",          sex: "M", peakDecade: 2020 },
+  { rank:   21, name: "Michael",       sex: "M", peakDecade: 1950 },
+  { rank:   22, name: "Daniel",        sex: "M", peakDecade: 1980 },
+  { rank:   23, name: "John",          sex: "M", peakDecade: 1950 },
+  { rank:   24, name: "Ethan",         sex: "M", peakDecade: 2000 },
+  { rank:   25, name: "Julian",        sex: "M", peakDecade: 2010 },
+  { rank:   26, name: "Santiago",      sex: "M", peakDecade: 2020 },
+  { rank:   27, name: "Cooper",        sex: "M", peakDecade: 2010 },
+  { rank:   28, name: "Asher",         sex: "M", peakDecade: 2010 },
+  { rank:   29, name: "Joseph",        sex: "M", peakDecade: 1950 },
+  { rank:   30, name: "Alexander",     sex: "M", peakDecade: 1990 },
+  { rank:   31, name: "Owen",          sex: "M", peakDecade: 2010 },
+  { rank:   32, name: "Matthew",       sex: "M", peakDecade: 1980 },
+  { rank:   33, name: "Luke",          sex: "M", peakDecade: 2010 },
+  { rank:   34, name: "Thomas",        sex: "M", peakDecade: 1950 },
+  { rank:   35, name: "David",         sex: "M", peakDecade: 1950 },
+  { rank:   36, name: "Jackson",       sex: "M", peakDecade: 2010 },
+  { rank:   37, name: "Gabriel",       sex: "M", peakDecade: 2000 },
+  { rank:   38, name: "Wyatt",         sex: "M", peakDecade: 2010 },
+  { rank:   39, name: "Mason",         sex: "M", peakDecade: 2010 },
+  { rank:   40, name: "Bennett",       sex: "M", peakDecade: 2020 },
+  { rank:   41, name: "Dylan",         sex: "M", peakDecade: 2000 },
+  { rank:   42, name: "Roman",         sex: "M", peakDecade: 2010 },
+  { rank:   43, name: "Jacob",         sex: "M", peakDecade: 1990 },
+  { rank:   44, name: "Miles",         sex: "M", peakDecade: 2010 },
+  { rank:   45, name: "Carter",        sex: "M", peakDecade: 2010 },
+  { rank:   46, name: "Anthony",       sex: "M", peakDecade: 1990 },
+  { rank:   47, name: "Isaac",         sex: "M", peakDecade: 2010 },
+  { rank:   48, name: "Charles",       sex: "M", peakDecade: 1940 },
+  { rank:   49, name: "Maverick",      sex: "M", peakDecade: 2020 },
+  { rank:   50, name: "Thiago",        sex: "M", peakDecade: 2020 },
+  { rank:   51, name: "Grayson",       sex: "M", peakDecade: 2010 },
+  { rank:   52, name: "Wesley",        sex: "M", peakDecade: 2010 },
+  { rank:   53, name: "Logan",         sex: "M", peakDecade: 2000 },
+  { rank:   54, name: "Josiah",        sex: "M", peakDecade: 2010 },
+  { rank:   55, name: "Weston",        sex: "M", peakDecade: 2010 },
+  { rank:   56, name: "Waylon",        sex: "M", peakDecade: 2020 },
+  { rank:   57, name: "Isaiah",        sex: "M", peakDecade: 2000 },
+  { rank:   58, name: "Caleb",         sex: "M", peakDecade: 2000 },
+  { rank:   59, name: "Rowan",         sex: "M", peakDecade: 2020 },
+  { rank:   60, name: "Beau",          sex: "M", peakDecade: 2020 },
+  { rank:   61, name: "Ezekiel",       sex: "M", peakDecade: 2020 },
+  { rank:   62, name: "Aiden",         sex: "M", peakDecade: 2010 },
+  { rank:   63, name: "Nathan",        sex: "M", peakDecade: 2000 },
+  { rank:   64, name: "Brooks",        sex: "M", peakDecade: 2020 },
+  { rank:   65, name: "Nolan",         sex: "M", peakDecade: 2010 },
+  { rank:   66, name: "Joshua",        sex: "M", peakDecade: 1980 },
+  { rank:   67, name: "Angel",         sex: "M", peakDecade: 2000 },
+  { rank:   68, name: "Christopher",   sex: "M", peakDecade: 1980 },
+  { rank:   69, name: "Lincoln",       sex: "M", peakDecade: 2010 },
+  { rank:   70, name: "Jayden",        sex: "M", peakDecade: 2010 },
+  { rank:   71, name: "Silas",         sex: "M", peakDecade: 2010 },
+  { rank:   72, name: "Enzo",          sex: "M", peakDecade: 2020 },
+  { rank:   73, name: "Andrew",        sex: "M", peakDecade: 1980 },
+  { rank:   74, name: "Adrian",        sex: "M", peakDecade: 2000 },
+  { rank:   75, name: "Atlas",         sex: "M", peakDecade: 2020 },
+  { rank:   76, name: "Cameron",       sex: "M", peakDecade: 2000 },
+  { rank:   77, name: "Everett",       sex: "M", peakDecade: 2010 },
+  { rank:   78, name: "Walker",        sex: "M", peakDecade: 2020 },
+  { rank:   79, name: "Axel",          sex: "M", peakDecade: 2010 },
+  { rank:   80, name: "Aaron",         sex: "M", peakDecade: 1980 },
+  { rank:   81, name: "August",        sex: "M", peakDecade: 2020 },
+  { rank:   82, name: "Theo",          sex: "M", peakDecade: 2020 },
+  { rank:   83, name: "Ian",           sex: "M", peakDecade: 2000 },
+  { rank:   84, name: "Adriel",        sex: "M", peakDecade: 2020 },
+  { rank:   85, name: "Luka",          sex: "M", peakDecade: 2020 },
+  { rank:   86, name: "Gael",          sex: "M", peakDecade: 2020 },
+  { rank:   87, name: "Arthur",        sex: "M", peakDecade: 1920 },
+  { rank:   88, name: "Jeremiah",      sex: "M", peakDecade: 2010 },
+  { rank:   89, name: "Jonathan",      sex: "M", peakDecade: 1980 },
+  { rank:   90, name: "Micah",         sex: "M", peakDecade: 2010 },
+  { rank:   91, name: "Leonardo",      sex: "M", peakDecade: 2010 },
+  { rank:   92, name: "Robert",        sex: "M", peakDecade: 1950 },
+  { rank:   93, name: "Kai",           sex: "M", peakDecade: 2020 },
+  { rank:   94, name: "Emiliano",      sex: "M", peakDecade: 2020 },
+  { rank:   95, name: "Jose",          sex: "M", peakDecade: 1990 },
+  { rank:   96, name: "Christian",     sex: "M", peakDecade: 2000 },
+  { rank:   97, name: "Eithan",        sex: "M", peakDecade: 2020 },
+  { rank:   98, name: "Archer",        sex: "M", peakDecade: 2020 },
+  { rank:   99, name: "Ryan",          sex: "M", peakDecade: 1980 },
+  { rank:  100, name: "Myles",         sex: "M", peakDecade: 2020 },
+  { rank:  101, name: "Adam",          sex: "M", peakDecade: 1980 },
+  { rank:  102, name: "Parker",        sex: "M", peakDecade: 2010 },
+  { rank:  103, name: "Colton",        sex: "M", peakDecade: 2010 },
+  { rank:  104, name: "Eli",           sex: "M", peakDecade: 2010 },
+  { rank:  105, name: "Amir",          sex: "M", peakDecade: 2010 },
+  { rank:  106, name: "Dominic",       sex: "M", peakDecade: 2010 },
+  { rank:  107, name: "Vincent",       sex: "M", peakDecade: 1960 },
+  { rank:  108, name: "Xavier",        sex: "M", peakDecade: 2000 },
+  { rank:  109, name: "Damian",        sex: "M", peakDecade: 2010 },
+  { rank:  110, name: "Easton",        sex: "M", peakDecade: 2010 },
+  { rank:  111, name: "River",         sex: "M", peakDecade: 2020 },
+  { rank:  112, name: "Nicholas",      sex: "M", peakDecade: 1990 },
+  { rank:  113, name: "Austin",        sex: "M", peakDecade: 1990 },
+  { rank:  114, name: "Jace",          sex: "M", peakDecade: 2010 },
+  { rank:  115, name: "Jaxon",         sex: "M", peakDecade: 2010 },
+  { rank:  116, name: "Harrison",      sex: "M", peakDecade: 2010 },
+  { rank:  117, name: "Lorenzo",       sex: "M", peakDecade: 2020 },
+  { rank:  118, name: "Callum",        sex: "M", peakDecade: 2020 },
+  { rank:  119, name: "Milo",          sex: "M", peakDecade: 2020 },
+  { rank:  120, name: "Graham",        sex: "M", peakDecade: 2010 },
+  { rank:  121, name: "Emmett",        sex: "M", peakDecade: 2010 },
+  { rank:  122, name: "Sawyer",        sex: "M", peakDecade: 2010 },
+  { rank:  123, name: "Giovanni",      sex: "M", peakDecade: 2010 },
+  { rank:  124, name: "Carson",        sex: "M", peakDecade: 2010 },
+  { rank:  125, name: "Dean",          sex: "M", peakDecade: 1960 },
+  { rank:  126, name: "George",        sex: "M", peakDecade: 1920 },
+  { rank:  127, name: "Landon",        sex: "M", peakDecade: 2010 },
+  { rank:  128, name: "Jonah",         sex: "M", peakDecade: 2010 },
+  { rank:  129, name: "Jasper",        sex: "M", peakDecade: 2010 },
+  { rank:  130, name: "Hunter",        sex: "M", peakDecade: 2000 },
+  { rank:  131, name: "Jordan",        sex: "M", peakDecade: 1990 },
+  { rank:  132, name: "Calvin",        sex: "M", peakDecade: 1950 },
+  { rank:  133, name: "Ryder",         sex: "M", peakDecade: 2010 },
+  { rank:  134, name: "Malachi",       sex: "M", peakDecade: 2010 },
+  { rank:  135, name: "Kayden",        sex: "M", peakDecade: 2010 },
+  { rank:  136, name: "Stetson",       sex: "M", peakDecade: 2020 },
+  { rank:  137, name: "Jameson",       sex: "M", peakDecade: 2010 },
+  { rank:  138, name: "Leon",          sex: "M", peakDecade: 1920 },
+  { rank:  139, name: "Declan",        sex: "M", peakDecade: 2010 },
+  { rank:  140, name: "Nathaniel",     sex: "M", peakDecade: 2000 },
+  { rank:  141, name: "Beckett",       sex: "M", peakDecade: 2010 },
+  { rank:  142, name: "Zion",          sex: "M", peakDecade: 2010 },
+  { rank:  143, name: "Dawson",        sex: "M", peakDecade: 2000 },
+  { rank:  144, name: "Luis",          sex: "M", peakDecade: 2000 },
+  { rank:  145, name: "Charlie",       sex: "M", peakDecade: 1920 },
+  { rank:  146, name: "Matteo",        sex: "M", peakDecade: 2010 },
+  { rank:  147, name: "Elian",         sex: "M", peakDecade: 2020 },
+  { rank:  148, name: "Arlo",          sex: "M", peakDecade: 2020 },
+  { rank:  149, name: "Greyson",       sex: "M", peakDecade: 2010 },
+  { rank:  150, name: "Carlos",        sex: "M", peakDecade: 2000 },
+  { rank:  151, name: "Elliot",        sex: "M", peakDecade: 2010 },
+  { rank:  152, name: "Bryson",        sex: "M", peakDecade: 2010 },
+  { rank:  153, name: "Evan",          sex: "M", peakDecade: 2000 },
+  { rank:  154, name: "Emilio",        sex: "M", peakDecade: 2010 },
+  { rank:  155, name: "Jude",          sex: "M", peakDecade: 2010 },
+  { rank:  156, name: "Jaxson",        sex: "M", peakDecade: 2010 },
+  { rank:  157, name: "Colter",        sex: "M", peakDecade: 2020 },
+  { rank:  158, name: "Diego",         sex: "M", peakDecade: 2000 },
+  { rank:  159, name: "Juan",          sex: "M", peakDecade: 2000 },
+  { rank:  160, name: "Elliott",       sex: "M", peakDecade: 2010 },
+  { rank:  161, name: "Hayden",        sex: "M", peakDecade: 2000 },
+  { rank:  162, name: "Hayes",         sex: "M", peakDecade: 2020 },
+  { rank:  163, name: "Ivan",          sex: "M", peakDecade: 2000 },
+  { rank:  164, name: "Ace",           sex: "M", peakDecade: 2020 },
+  { rank:  165, name: "Jason",         sex: "M", peakDecade: 1970 },
+  { rank:  166, name: "Connor",        sex: "M", peakDecade: 2000 },
+  { rank:  167, name: "Jayce",         sex: "M", peakDecade: 2010 },
+  { rank:  168, name: "Beckham",       sex: "M", peakDecade: 2020 },
+  { rank:  169, name: "Jett",          sex: "M", peakDecade: 2020 },
+  { rank:  170, name: "Matias",        sex: "M", peakDecade: 2020 },
+  { rank:  171, name: "Barrett",       sex: "M", peakDecade: 2020 },
+  { rank:  172, name: "Braxton",       sex: "M", peakDecade: 2010 },
+  { rank:  173, name: "Jesus",         sex: "M", peakDecade: 2000 },
+  { rank:  174, name: "Nico",          sex: "M", peakDecade: 2020 },
+  { rank:  175, name: "Felix",         sex: "M", peakDecade: 2010 },
+  { rank:  176, name: "Antonio",       sex: "M", peakDecade: 1990 },
+  { rank:  177, name: "Nicolas",       sex: "M", peakDecade: 2000 },
+  { rank:  178, name: "Judah",         sex: "M", peakDecade: 2010 },
+  { rank:  179, name: "Emmanuel",      sex: "M", peakDecade: 2010 },
+  { rank:  180, name: "Max",           sex: "M", peakDecade: 2010 },
+  { rank:  181, name: "Tucker",        sex: "M", peakDecade: 2010 },
+  { rank:  182, name: "Cole",          sex: "M", peakDecade: 2000 },
+  { rank:  183, name: "Ryker",         sex: "M", peakDecade: 2010 },
+  { rank:  184, name: "Jesse",         sex: "M", peakDecade: 1980 },
+  { rank:  185, name: "Amari",         sex: "M", peakDecade: 2020 },
+  { rank:  186, name: "Aziel",         sex: "M", peakDecade: 2020 },
+  { rank:  187, name: "Peter",         sex: "M", peakDecade: 1950 },
+  { rank:  188, name: "Rhett",         sex: "M", peakDecade: 2020 },
+  { rank:  189, name: "Maxwell",       sex: "M", peakDecade: 2010 },
+  { rank:  190, name: "Callan",        sex: "M", peakDecade: 2020 },
+  { rank:  191, name: "Alan",          sex: "M", peakDecade: 1950 },
+  { rank:  192, name: "Chase",         sex: "M", peakDecade: 2000 },
+  { rank:  193, name: "Legend",        sex: "M", peakDecade: 2020 },
+  { rank:  194, name: "Tate",          sex: "M", peakDecade: 2020 },
+  { rank:  195, name: "Alejandro",     sex: "M", peakDecade: 2000 },
+  { rank:  196, name: "Knox",          sex: "M", peakDecade: 2010 },
+  { rank:  197, name: "Ashton",        sex: "M", peakDecade: 2000 },
+  { rank:  198, name: "Jaziel",        sex: "M", peakDecade: 2020 },
+  { rank:  199, name: "Rory",          sex: "M", peakDecade: 2020 },
+  { rank:  200, name: "Andres",        sex: "M", peakDecade: 2000 },
+  { rank:  201, name: "Caden",         sex: "M", peakDecade: 2000 },
+  { rank:  202, name: "Tatum",         sex: "M", peakDecade: 2020 },
+  { rank:  203, name: "Timothy",       sex: "M", peakDecade: 1960 },
+  { rank:  204, name: "Kingston",      sex: "M", peakDecade: 2010 },
+  { rank:  205, name: "Camden",        sex: "M", peakDecade: 2010 },
+  { rank:  206, name: "Finn",          sex: "M", peakDecade: 2010 },
+  { rank:  207, name: "Messiah",       sex: "M", peakDecade: 2010 },
+  { rank:  208, name: "Riley",         sex: "M", peakDecade: 2000 },
+  { rank:  209, name: "Abraham",       sex: "M", peakDecade: 2010 },
+  { rank:  210, name: "Maddox",        sex: "M", peakDecade: 2010 },
+  { rank:  211, name: "Victor",        sex: "M", peakDecade: 1990 },
+  { rank:  212, name: "Miguel",        sex: "M", peakDecade: 2000 },
+  { rank:  213, name: "Malakai",       sex: "M", peakDecade: 2020 },
+  { rank:  214, name: "Zayden",        sex: "M", peakDecade: 2010 },
+  { rank:  215, name: "Bentley",       sex: "M", peakDecade: 2010 },
+  { rank:  216, name: "Zachary",       sex: "M", peakDecade: 1990 },
+  { rank:  217, name: "Baker",         sex: "M", peakDecade: 2020 },
+  { rank:  218, name: "Rafael",        sex: "M", peakDecade: 2000 },
+  { rank:  219, name: "Joel",          sex: "M", peakDecade: 1980 },
+  { rank:  220, name: "Tyler",         sex: "M", peakDecade: 1990 },
+  { rank:  221, name: "Kevin",         sex: "M", peakDecade: 1960 },
+  { rank:  222, name: "Griffin",       sex: "M", peakDecade: 2010 },
+  { rank:  223, name: "Oscar",         sex: "M", peakDecade: 2000 },
+  { rank:  224, name: "Edward",        sex: "M", peakDecade: 1920 },
+  { rank:  225, name: "Cohen",         sex: "M", peakDecade: 2010 },
+  { rank:  226, name: "Kairo",         sex: "M", peakDecade: 2020 },
+  { rank:  227, name: "Callahan",      sex: "M", peakDecade: 2020 },
+  { rank:  228, name: "Grant",         sex: "M", peakDecade: 2000 },
+  { rank:  229, name: "Brayden",       sex: "M", peakDecade: 2010 },
+  { rank:  230, name: "Simon",         sex: "M", peakDecade: 2010 },
+  { rank:  231, name: "Abel",          sex: "M", peakDecade: 2010 },
+  { rank:  232, name: "Alex",          sex: "M", peakDecade: 1990 },
+  { rank:  233, name: "Justin",        sex: "M", peakDecade: 1980 },
+  { rank:  234, name: "Richard",       sex: "M", peakDecade: 1950 },
+  { rank:  235, name: "Patrick",       sex: "M", peakDecade: 1960 },
+  { rank:  236, name: "Brody",         sex: "M", peakDecade: 2010 },
+  { rank:  237, name: "Kaiden",        sex: "M", peakDecade: 2010 },
+  { rank:  238, name: "Dallas",        sex: "M", peakDecade: 2010 },
+  { rank:  239, name: "Muhammad",      sex: "M", peakDecade: 2010 },
+  { rank:  240, name: "Warren",        sex: "M", peakDecade: 1920 },
+  { rank:  241, name: "Adonis",        sex: "M", peakDecade: 2020 },
+  { rank:  242, name: "Milan",         sex: "M", peakDecade: 2020 },
+  { rank:  243, name: "Ellis",         sex: "M", peakDecade: 2010 },
+  { rank:  244, name: "Kyrie",         sex: "M", peakDecade: 2020 },
+  { rank:  245, name: "Mark",          sex: "M", peakDecade: 1960 },
+  { rank:  246, name: "Shepherd",      sex: "M", peakDecade: 2020 },
+  { rank:  247, name: "Ronan",         sex: "M", peakDecade: 2010 },
+  { rank:  248, name: "Cade",          sex: "M", peakDecade: 2000 },
+  { rank:  249, name: "Louis",         sex: "M", peakDecade: 1920 },
+  { rank:  250, name: "Lane",          sex: "M", peakDecade: 2010 },
+  { rank:  251, name: "Harvey",        sex: "M", peakDecade: 1920 },
+  { rank:  252, name: "Walter",        sex: "M", peakDecade: 1920 },
+  { rank:  253, name: "Zayn",          sex: "M", peakDecade: 2020 },
+  { rank:  254, name: "Emerson",       sex: "M", peakDecade: 2010 },
+  { rank:  255, name: "Nash",          sex: "M", peakDecade: 2010 },
+  { rank:  256, name: "Crew",          sex: "M", peakDecade: 2020 },
+  { rank:  257, name: "Ayden",         sex: "M", peakDecade: 2010 },
+  { rank:  258, name: "Marcus",        sex: "M", peakDecade: 1980 },
+  { rank:  259, name: "Xander",        sex: "M", peakDecade: 2010 },
+  { rank:  260, name: "Omar",          sex: "M", peakDecade: 2000 },
+  { rank:  261, name: "Brandon",       sex: "M", peakDecade: 1990 },
+  { rank:  262, name: "Paul",          sex: "M", peakDecade: 1950 },
+  { rank:  263, name: "Ismael",        sex: "M", peakDecade: 2000 },
+  { rank:  264, name: "Kayson",        sex: "M", peakDecade: 2020 },
+  { rank:  265, name: "Bodhi",         sex: "M", peakDecade: 2020 },
+  { rank:  266, name: "Bowen",         sex: "M", peakDecade: 2020 },
+  { rank:  267, name: "Saint",         sex: "M", peakDecade: 2020 },
+  { rank:  268, name: "Cyrus",         sex: "M", peakDecade: 2020 },
+  { rank:  269, name: "Koa",           sex: "M", peakDecade: 2020 },
+  { rank:  270, name: "Karter",        sex: "M", peakDecade: 2010 },
+  { rank:  271, name: "Steven",        sex: "M", peakDecade: 1950 },
+  { rank:  272, name: "Malcolm",       sex: "M", peakDecade: 1990 },
+  { rank:  273, name: "Eric",          sex: "M", peakDecade: 1970 },
+  { rank:  274, name: "Javier",        sex: "M", peakDecade: 2000 },
+  { rank:  275, name: "Bodie",         sex: "M", peakDecade: 2020 },
+  { rank:  276, name: "Maximus",       sex: "M", peakDecade: 2010 },
+  { rank:  277, name: "Otto",          sex: "M", peakDecade: 2020 },
+  { rank:  278, name: "Shiloh",        sex: "M", peakDecade: 2020 },
+  { rank:  279, name: "Benson",        sex: "M", peakDecade: 2010 },
+  { rank:  280, name: "Maximiliano",   sex: "M", peakDecade: 2010 },
+  { rank:  281, name: "Atticus",       sex: "M", peakDecade: 2010 },
+  { rank:  282, name: "Jensen",        sex: "M", peakDecade: 2010 },
+  { rank:  283, name: "Tobias",        sex: "M", peakDecade: 2010 },
+  { rank:  284, name: "Derek",         sex: "M", peakDecade: 1980 },
+  { rank:  285, name: "Colt",          sex: "M", peakDecade: 2010 },
+  { rank:  286, name: "Kash",          sex: "M", peakDecade: 2020 },
+  { rank:  287, name: "Cash",          sex: "M", peakDecade: 2010 },
+  { rank:  288, name: "Lukas",         sex: "M", peakDecade: 2010 },
+  { rank:  289, name: "Lennox",        sex: "M", peakDecade: 2020 },
+  { rank:  290, name: "Ares",          sex: "M", peakDecade: 2020 },
+  { rank:  291, name: "Avery",         sex: "M", peakDecade: 2010 },
+  { rank:  292, name: "Jeremy",        sex: "M", peakDecade: 1980 },
+  { rank:  293, name: "Reid",          sex: "M", peakDecade: 2010 },
+  { rank:  294, name: "Kenneth",       sex: "M", peakDecade: 1950 },
+  { rank:  295, name: "Kaleb",         sex: "M", peakDecade: 2000 },
+  { rank:  296, name: "Kohen",         sex: "M", peakDecade: 2020 },
+  { rank:  297, name: "Holden",        sex: "M", peakDecade: 2010 },
+  { rank:  298, name: "Sonny",         sex: "M", peakDecade: 2020 },
+  { rank:  299, name: "Preston",       sex: "M", peakDecade: 2000 },
+  { rank:  300, name: "Clayton",       sex: "M", peakDecade: 1990 },
+  { rank:  301, name: "Archie",        sex: "M", peakDecade: 1920 },
+  { rank:  302, name: "Romeo",         sex: "M", peakDecade: 2010 },
+  { rank:  303, name: "Gavin",         sex: "M", peakDecade: 2000 },
+  { rank:  304, name: "Angelo",        sex: "M", peakDecade: 2000 },
+  { rank:  305, name: "Luciano",       sex: "M", peakDecade: 2020 },
+  { rank:  306, name: "Ali",           sex: "M", peakDecade: 2010 },
+  { rank:  307, name: "Remington",     sex: "M", peakDecade: 2010 },
+  { rank:  308, name: "Dante",         sex: "M", peakDecade: 2000 },
+  { rank:  309, name: "Tristan",       sex: "M", peakDecade: 2000 },
+  { rank:  310, name: "Banks",         sex: "M", peakDecade: 2020 },
+  { rank:  311, name: "Colson",        sex: "M", peakDecade: 2020 },
+  { rank:  312, name: "Mathias",       sex: "M", peakDecade: 2020 },
+  { rank:  313, name: "Eliam",         sex: "M", peakDecade: 2020 },
+  { rank:  314, name: "Sullivan",      sex: "M", peakDecade: 2010 },
+  { rank:  315, name: "Israel",        sex: "M", peakDecade: 2000 },
+  { rank:  316, name: "Blake",         sex: "M", peakDecade: 2000 },
+  { rank:  317, name: "Zyaire",        sex: "M", peakDecade: 2020 },
+  { rank:  318, name: "Cody",          sex: "M", peakDecade: 1990 },
+  { rank:  319, name: "Dakota",        sex: "M", peakDecade: 1990 },
+  { rank:  320, name: "Casey",         sex: "M", peakDecade: 1980 },
+  { rank:  321, name: "Brady",         sex: "M", peakDecade: 2000 },
+  { rank:  322, name: "Francisco",     sex: "M", peakDecade: 1990 },
+  { rank:  323, name: "Jorge",         sex: "M", peakDecade: 2000 },
+  { rank:  324, name: "Zane",          sex: "M", peakDecade: 2010 },
+  { rank:  325, name: "Niko",          sex: "M", peakDecade: 2020 },
+  { rank:  326, name: "Aidan",         sex: "M", peakDecade: 2000 },
+  { rank:  327, name: "Dariel",        sex: "M", peakDecade: 2020 },
+  { rank:  328, name: "Kaden",         sex: "M", peakDecade: 2000 },
+  { rank:  329, name: "Phoenix",       sex: "M", peakDecade: 2010 },
+  { rank:  330, name: "Josue",         sex: "M", peakDecade: 2000 },
+  { rank:  331, name: "Cruz",          sex: "M", peakDecade: 2010 },
+  { rank:  332, name: "Sutton",        sex: "M", peakDecade: 2020 },
+  { rank:  333, name: "Finley",        sex: "M", peakDecade: 2010 },
+  { rank:  334, name: "Orion",         sex: "M", peakDecade: 2010 },
+  { rank:  335, name: "Martin",        sex: "M", peakDecade: 1950 },
+  { rank:  336, name: "Bryan",         sex: "M", peakDecade: 1980 },
+  { rank:  337, name: "Gideon",        sex: "M", peakDecade: 2010 },
+  { rank:  338, name: "Paxton",        sex: "M", peakDecade: 2010 },
+  { rank:  339, name: "Brian",         sex: "M", peakDecade: 1970 },
+  { rank:  340, name: "Marshall",      sex: "M", peakDecade: 1950 },
+  { rank:  341, name: "Cairo",         sex: "M", peakDecade: 2020 },
+  { rank:  342, name: "Jax",           sex: "M", peakDecade: 2010 },
+  { rank:  343, name: "Colin",         sex: "M", peakDecade: 2000 },
+  { rank:  344, name: "Wade",          sex: "M", peakDecade: 1960 },
+  { rank:  345, name: "Russell",       sex: "M", peakDecade: 1950 },
+  { rank:  346, name: "Sterling",      sex: "M", peakDecade: 2010 },
+  { rank:  347, name: "Wells",         sex: "M", peakDecade: 2020 },
+  { rank:  348, name: "Ezequiel",      sex: "M", peakDecade: 2020 },
+  { rank:  349, name: "Kade",          sex: "M", peakDecade: 2010 },
+  { rank:  350, name: "Leonel",        sex: "M", peakDecade: 2010 },
+  { rank:  351, name: "Ibrahim",       sex: "M", peakDecade: 2010 },
+  { rank:  352, name: "Damien",        sex: "M", peakDecade: 2000 },
+  { rank:  353, name: "Santino",       sex: "M", peakDecade: 2020 },
+  { rank:  354, name: "Hendrix",       sex: "M", peakDecade: 2020 },
+  { rank:  355, name: "Joaquin",       sex: "M", peakDecade: 2010 },
+  { rank:  356, name: "Briggs",        sex: "M", peakDecade: 2020 },
+  { rank:  357, name: "Bryce",         sex: "M", peakDecade: 2000 },
+  { rank:  358, name: "Titus",         sex: "M", peakDecade: 2010 },
+  { rank:  359, name: "Franklin",      sex: "M", peakDecade: 1930 },
+  { rank:  360, name: "Spencer",       sex: "M", peakDecade: 1990 },
+  { rank:  361, name: "Jaylen",        sex: "M", peakDecade: 2000 },
+  { rank:  362, name: "Cristian",      sex: "M", peakDecade: 2000 },
+  { rank:  363, name: "Anderson",      sex: "M", peakDecade: 2010 },
+  { rank:  364, name: "Kaizen",        sex: "M", peakDecade: 2020 },
+  { rank:  365, name: "Onyx",          sex: "M", peakDecade: 2020 },
+  { rank:  366, name: "Erick",         sex: "M", peakDecade: 2000 },
+  { rank:  367, name: "Kyaire",        sex: "M", peakDecade: 2020 },
+  { rank:  368, name: "Andre",         sex: "M", peakDecade: 1980 },
+  { rank:  369, name: "Miller",        sex: "M", peakDecade: 2020 },
+  { rank:  370, name: "Marco",         sex: "M", peakDecade: 2000 },
+  { rank:  371, name: "Manuel",        sex: "M", peakDecade: 1990 },
+  { rank:  372, name: "Matthias",      sex: "M", peakDecade: 2010 },
+  { rank:  373, name: "Grady",         sex: "M", peakDecade: 2010 },
+  { rank:  374, name: "Forrest",       sex: "M", peakDecade: 1920 },
+  { rank:  375, name: "Kayce",         sex: "M", peakDecade: 2020 },
+  { rank:  376, name: "Desmond",       sex: "M", peakDecade: 2010 },
+  { rank:  377, name: "Clark",         sex: "M", peakDecade: 2010 },
+  { rank:  378, name: "Hugo",          sex: "M", peakDecade: 2000 },
+  { rank:  379, name: "Daxton",        sex: "M", peakDecade: 2010 },
+  { rank:  380, name: "Ricardo",       sex: "M", peakDecade: 1990 },
+  { rank:  381, name: "Lawson",        sex: "M", peakDecade: 2010 },
+  { rank:  382, name: "Winston",       sex: "M", peakDecade: 2010 },
+  { rank:  383, name: "Stephen",       sex: "M", peakDecade: 1950 },
+  { rank:  384, name: "Khalil",        sex: "M", peakDecade: 2010 },
+  { rank:  385, name: "Cesar",         sex: "M", peakDecade: 2000 },
+  { rank:  386, name: "Baylor",        sex: "M", peakDecade: 2020 },
+  { rank:  387, name: "Fernando",      sex: "M", peakDecade: 2000 },
+  { rank:  388, name: "Elio",          sex: "M", peakDecade: 2020 },
+  { rank:  389, name: "Kieran",        sex: "M", peakDecade: 2010 },
+  { rank:  390, name: "Iker",          sex: "M", peakDecade: 2010 },
+  { rank:  391, name: "Kamari",        sex: "M", peakDecade: 2020 },
+  { rank:  392, name: "Jay",           sex: "M", peakDecade: 1960 },
+  { rank:  393, name: "Ari",           sex: "M", peakDecade: 2010 },
+  { rank:  394, name: "Raphael",       sex: "M", peakDecade: 2010 },
+  { rank:  395, name: "Raymond",       sex: "M", peakDecade: 1920 },
+  { rank:  396, name: "Jared",         sex: "M", peakDecade: 1990 },
+  { rank:  397, name: "Zander",        sex: "M", peakDecade: 2010 },
+  { rank:  398, name: "Edwin",         sex: "M", peakDecade: 1920 },
+  { rank:  399, name: "Marcelo",       sex: "M", peakDecade: 2020 },
+  { rank:  400, name: "Kashton",       sex: "M", peakDecade: 2020 },
+  { rank:  401, name: "Kian",          sex: "M", peakDecade: 2010 },
+  { rank:  402, name: "Kylo",          sex: "M", peakDecade: 2020 },
+  { rank:  403, name: "Bradley",       sex: "M", peakDecade: 1980 },
+  { rank:  404, name: "Kyler",         sex: "M", peakDecade: 2010 },
+  { rank:  405, name: "King",          sex: "M", peakDecade: 2010 },
+  { rank:  406, name: "Leandro",       sex: "M", peakDecade: 2020 },
+  { rank:  407, name: "Augustus",      sex: "M", peakDecade: 2010 },
+  { rank:  408, name: "Remy",          sex: "M", peakDecade: 2020 },
+  { rank:  409, name: "Hector",        sex: "M", peakDecade: 2000 },
+  { rank:  410, name: "Eduardo",       sex: "M", peakDecade: 2000 },
+  { rank:  411, name: "Koda",          sex: "M", peakDecade: 2020 },
+  { rank:  412, name: "Rhys",          sex: "M", peakDecade: 2010 },
+  { rank:  413, name: "Hank",          sex: "M", peakDecade: 2010 },
+  { rank:  414, name: "Cayden",        sex: "M", peakDecade: 2010 },
+  { rank:  415, name: "Kaysen",        sex: "M", peakDecade: 2020 },
+  { rank:  416, name: "Rylan",         sex: "M", peakDecade: 2010 },
+  { rank:  417, name: "Conrad",        sex: "M", peakDecade: 1930 },
+  { rank:  418, name: "Killian",       sex: "M", peakDecade: 2010 },
+  { rank:  419, name: "Reed",          sex: "M", peakDecade: 2010 },
+  { rank:  420, name: "Francis",       sex: "M", peakDecade: 1920 },
+  { rank:  421, name: "Jaden",         sex: "M", peakDecade: 2000 },
+  { rank:  422, name: "Solomon",       sex: "M", peakDecade: 2010 },
+  { rank:  423, name: "Boone",         sex: "M", peakDecade: 2020 },
+  { rank:  424, name: "Julius",        sex: "M", peakDecade: 1920 },
+  { rank:  425, name: "Lucca",         sex: "M", peakDecade: 2020 },
+  { rank:  426, name: "Isaias",        sex: "M", peakDecade: 2010 },
+  { rank:  427, name: "Tadeo",         sex: "M", peakDecade: 2020 },
+  { rank:  428, name: "Lian",          sex: "M", peakDecade: 2020 },
+  { rank:  429, name: "Nehemiah",      sex: "M", peakDecade: 2010 },
+  { rank:  430, name: "Pablo",         sex: "M", peakDecade: 2000 },
+  { rank:  431, name: "Wilder",        sex: "M", peakDecade: 2020 },
+  { rank:  432, name: "Raiden",        sex: "M", peakDecade: 2010 },
+  { rank:  433, name: "Lewis",         sex: "M", peakDecade: 1920 },
+  { rank:  434, name: "Travis",        sex: "M", peakDecade: 1980 },
+  { rank:  435, name: "Frederick",     sex: "M", peakDecade: 1950 },
+  { rank:  436, name: "Moshe",         sex: "M", peakDecade: 2010 },
+  { rank:  437, name: "Malik",         sex: "M", peakDecade: 1990 },
+  { rank:  438, name: "Mario",         sex: "M", peakDecade: 1980 },
+  { rank:  439, name: "Jasai",         sex: "M", peakDecade: 2020 },
+  { rank:  440, name: "Sylas",         sex: "M", peakDecade: 2010 },
+  { rank:  441, name: "Sergio",        sex: "M", peakDecade: 1990 },
+  { rank:  442, name: "Chance",        sex: "M", peakDecade: 2000 },
+  { rank:  443, name: "Jalen",         sex: "M", peakDecade: 2000 },
+  { rank:  444, name: "Valentino",     sex: "M", peakDecade: 2020 },
+  { rank:  445, name: "Apollo",        sex: "M", peakDecade: 2020 },
+  { rank:  446, name: "Uriel",         sex: "M", peakDecade: 2000 },
+  { rank:  447, name: "Prince",        sex: "M", peakDecade: 2010 },
+  { rank:  448, name: "Dalton",        sex: "M", peakDecade: 1990 },
+  { rank:  449, name: "Bo",            sex: "M", peakDecade: 2010 },
+  { rank:  450, name: "Yusuf",         sex: "M", peakDecade: 2010 },
+  { rank:  451, name: "Kane",          sex: "M", peakDecade: 2010 },
+  { rank:  452, name: "Rome",          sex: "M", peakDecade: 2020 },
+  { rank:  453, name: "Karson",        sex: "M", peakDecade: 2010 },
+  { rank:  454, name: "Oakley",        sex: "M", peakDecade: 2020 },
+  { rank:  455, name: "Pedro",         sex: "M", peakDecade: 1990 },
+  { rank:  456, name: "Sage",          sex: "M", peakDecade: 2010 },
+  { rank:  457, name: "Jake",          sex: "M", peakDecade: 2000 },
+  { rank:  458, name: "Johnny",        sex: "M", peakDecade: 1950 },
+  { rank:  459, name: "Rocco",         sex: "M", peakDecade: 2010 },
+  { rank:  460, name: "Reece",         sex: "M", peakDecade: 2000 },
+  { rank:  461, name: "Esteban",       sex: "M", peakDecade: 2000 },
+  { rank:  462, name: "Lucian",        sex: "M", peakDecade: 2010 },
+  { rank:  463, name: "Mack",          sex: "M", peakDecade: 1940 },
+  { rank:  464, name: "Soren",         sex: "M", peakDecade: 2010 },
+  { rank:  465, name: "Ayaan",         sex: "M", peakDecade: 2010 },
+  { rank:  466, name: "Kameron",       sex: "M", peakDecade: 2010 },
+  { rank:  467, name: "Quinn",         sex: "M", peakDecade: 2000 },
+  { rank:  468, name: "Fabian",        sex: "M", peakDecade: 2000 },
+  { rank:  469, name: "Alijah",        sex: "M", peakDecade: 2010 },
+  { rank:  470, name: "Musa",          sex: "M", peakDecade: 2020 },
+  { rank:  471, name: "Kyson",         sex: "M", peakDecade: 2010 },
+  { rank:  472, name: "Azariah",       sex: "M", peakDecade: 2020 },
+  { rank:  473, name: "Zayne",         sex: "M", peakDecade: 2010 },
+  { rank:  474, name: "Ford",          sex: "M", peakDecade: 2020 },
+  { rank:  475, name: "Tanner",        sex: "M", peakDecade: 1990 },
+  { rank:  476, name: "Royal",         sex: "M", peakDecade: 2020 },
+  { rank:  477, name: "Samson",        sex: "M", peakDecade: 2010 },
+  { rank:  478, name: "Noel",          sex: "M", peakDecade: 2010 },
+  { rank:  479, name: "Cassian",       sex: "M", peakDecade: 2020 },
+  { rank:  480, name: "Ruben",         sex: "M", peakDecade: 1990 },
+  { rank:  481, name: "Makai",         sex: "M", peakDecade: 2010 },
+  { rank:  482, name: "Adan",          sex: "M", peakDecade: 2000 },
+  { rank:  483, name: "Asa",           sex: "M", peakDecade: 2010 },
+  { rank:  484, name: "Kasen",         sex: "M", peakDecade: 2010 },
+  { rank:  485, name: "Hezekiah",      sex: "M", peakDecade: 2010 },
+  { rank:  486, name: "Edgar",         sex: "M", peakDecade: 2000 },
+  { rank:  487, name: "Nasir",         sex: "M", peakDecade: 2010 },
+  { rank:  488, name: "Rowen",         sex: "M", peakDecade: 2010 },
+  { rank:  489, name: "Sean",          sex: "M", peakDecade: 1980 },
+  { rank:  490, name: "Arjun",         sex: "M", peakDecade: 2010 },
+  { rank:  491, name: "Caspian",       sex: "M", peakDecade: 2020 },
+  { rank:  492, name: "Rodrigo",       sex: "M", peakDecade: 2000 },
+  { rank:  493, name: "Collin",        sex: "M", peakDecade: 2000 },
+  { rank:  494, name: "Leland",        sex: "M", peakDecade: 2010 },
+  { rank:  495, name: "Armani",        sex: "M", peakDecade: 2010 },
+  { rank:  496, name: "Donovan",       sex: "M", peakDecade: 2000 },
+  { rank:  497, name: "Alessandro",    sex: "M", peakDecade: 2010 },
+  { rank:  498, name: "Jasiah",        sex: "M", peakDecade: 2010 },
+  { rank:  499, name: "Brantley",      sex: "M", peakDecade: 2010 },
+  { rank:  500, name: "Royce",         sex: "M", peakDecade: 2010 },
+  { rank:  501, name: "Damon",         sex: "M", peakDecade: 1970 },
+  { rank:  502, name: "Odin",          sex: "M", peakDecade: 2010 },
+  { rank:  503, name: "Zaire",         sex: "M", peakDecade: 2020 },
+  { rank:  504, name: "Ronin",         sex: "M", peakDecade: 2010 },
+  { rank:  505, name: "Pierce",        sex: "M", peakDecade: 2010 },
+  { rank:  506, name: "Gunner",        sex: "M", peakDecade: 2010 },
+  { rank:  507, name: "Cillian",       sex: "M", peakDecade: 2020 },
+  { rank:  508, name: "Johnathan",     sex: "M", peakDecade: 1990 },
+  { rank:  509, name: "Kyle",          sex: "M", peakDecade: 1990 },
+  { rank:  510, name: "Leonidas",      sex: "M", peakDecade: 2010 },
+  { rank:  511, name: "Alonzo",        sex: "M", peakDecade: 2010 },
+  { rank:  512, name: "Corbin",        sex: "M", peakDecade: 2010 },
+  { rank:  513, name: "Alexis",        sex: "M", peakDecade: 2000 },
+  { rank:  514, name: "Frank",         sex: "M", peakDecade: 1920 },
+  { rank:  515, name: "Moses",         sex: "M", peakDecade: 2010 },
+  { rank:  516, name: "Callen",        sex: "M", peakDecade: 2010 },
+  { rank:  517, name: "Marcos",        sex: "M", peakDecade: 2000 },
+  { rank:  518, name: "Denver",        sex: "M", peakDecade: 2020 },
+  { rank:  519, name: "Kobe",          sex: "M", peakDecade: 2000 },
+  { rank:  520, name: "Lawrence",      sex: "M", peakDecade: 1950 },
+  { rank:  521, name: "Truett",        sex: "M", peakDecade: 2020 },
+  { rank:  522, name: "Tripp",         sex: "M", peakDecade: 2020 },
+  { rank:  523, name: "Chozen",        sex: "M", peakDecade: 2020 },
+  { rank:  524, name: "Gianni",        sex: "M", peakDecade: 2010 },
+  { rank:  525, name: "Roy",           sex: "M", peakDecade: 1940 },
+  { rank:  526, name: "Finnegan",      sex: "M", peakDecade: 2010 },
+  { rank:  527, name: "Mohamed",       sex: "M", peakDecade: 2010 },
+  { rank:  528, name: "Philip",        sex: "M", peakDecade: 1950 },
+  { rank:  529, name: "Azriel",        sex: "M", peakDecade: 2020 },
+  { rank:  530, name: "Ridge",         sex: "M", peakDecade: 2020 },
+  { rank:  531, name: "Tyson",         sex: "M", peakDecade: 2010 },
+  { rank:  532, name: "Rio",           sex: "M", peakDecade: 2020 },
+  { rank:  533, name: "Troy",          sex: "M", peakDecade: 1960 },
+  { rank:  534, name: "Scott",         sex: "M", peakDecade: 1960 },
+  { rank:  535, name: "Kendrick",      sex: "M", peakDecade: 2010 },
+  { rank:  536, name: "Bruce",         sex: "M", peakDecade: 1950 },
+  { rank:  537, name: "Eiden",         sex: "M", peakDecade: 2020 },
+  { rank:  538, name: "Zachariah",     sex: "M", peakDecade: 1990 },
+  { rank:  539, name: "Dorian",        sex: "M", peakDecade: 2000 },
+  { rank:  540, name: "Kaison",        sex: "M", peakDecade: 2020 },
+  { rank:  541, name: "Hamza",         sex: "M", peakDecade: 2010 },
+  { rank:  542, name: "Akari",         sex: "M", peakDecade: 2020 },
+  { rank:  543, name: "Cal",           sex: "M", peakDecade: 2020 },
+  { rank:  544, name: "Eden",          sex: "M", peakDecade: 2010 },
+  { rank:  545, name: "Augustine",     sex: "M", peakDecade: 2020 },
+  { rank:  546, name: "Erik",          sex: "M", peakDecade: 1980 },
+  { rank:  547, name: "Fletcher",      sex: "M", peakDecade: 2010 },
+  { rank:  548, name: "Devin",         sex: "M", peakDecade: 1990 },
+  { rank:  549, name: "Ozzy",          sex: "M", peakDecade: 2020 },
+  { rank:  550, name: "Eliseo",        sex: "M", peakDecade: 2020 },
+  { rank:  551, name: "Emir",          sex: "M", peakDecade: 2020 },
+  { rank:  552, name: "Jeffrey",       sex: "M", peakDecade: 1960 },
+  { rank:  553, name: "Drew",          sex: "M", peakDecade: 1990 },
+  { rank:  554, name: "Ledger",        sex: "M", peakDecade: 2020 },
+  { rank:  555, name: "Chosen",        sex: "M", peakDecade: 2020 },
+  { rank:  556, name: "Armando",       sex: "M", peakDecade: 1990 },
+  { rank:  557, name: "Saul",          sex: "M", peakDecade: 2000 },
+  { rank:  558, name: "Ariel",         sex: "M", peakDecade: 1990 },
+  { rank:  559, name: "Morgan",        sex: "M", peakDecade: 1990 },
+  { rank:  560, name: "Porter",        sex: "M", peakDecade: 2010 },
+  { rank:  561, name: "Deacon",        sex: "M", peakDecade: 2010 },
+  { rank:  562, name: "Mohammad",      sex: "M", peakDecade: 2010 },
+  { rank:  563, name: "Zakai",         sex: "M", peakDecade: 2020 },
+  { rank:  564, name: "Garrett",       sex: "M", peakDecade: 1990 },
+  { rank:  565, name: "Andy",          sex: "M", peakDecade: 2000 },
+  { rank:  566, name: "Colsen",        sex: "M", peakDecade: 2020 },
+  { rank:  567, name: "Zain",          sex: "M", peakDecade: 2010 },
+  { rank:  568, name: "Rocky",         sex: "M", peakDecade: 1950 },
+  { rank:  569, name: "Jakai",         sex: "M", peakDecade: 2020 },
+  { rank:  570, name: "Roberto",       sex: "M", peakDecade: 1990 },
+  { rank:  571, name: "Enrique",       sex: "M", peakDecade: 2000 },
+  { rank:  572, name: "Johan",         sex: "M", peakDecade: 2010 },
+  { rank:  573, name: "Clay",          sex: "M", peakDecade: 1990 },
+  { rank:  574, name: "Emanuel",       sex: "M", peakDecade: 2000 },
+  { rank:  575, name: "Rhodes",        sex: "M", peakDecade: 2020 },
+  { rank:  576, name: "Jamari",        sex: "M", peakDecade: 2000 },
+  { rank:  577, name: "Jamie",         sex: "M", peakDecade: 1970 },
+  { rank:  578, name: "Allen",         sex: "M", peakDecade: 1950 },
+  { rank:  579, name: "Kylan",         sex: "M", peakDecade: 2010 },
+  { rank:  580, name: "Maximo",        sex: "M", peakDecade: 2010 },
+  { rank:  581, name: "Seth",          sex: "M", peakDecade: 2000 },
+  { rank:  582, name: "Atreus",        sex: "M", peakDecade: 2020 },
+  { rank:  583, name: "Cassius",       sex: "M", peakDecade: 2010 },
+  { rank:  584, name: "Kyren",         sex: "M", peakDecade: 2020 },
+  { rank:  585, name: "Camilo",        sex: "M", peakDecade: 2020 },
+  { rank:  586, name: "Eliel",         sex: "M", peakDecade: 2020 },
+  { rank:  587, name: "Moises",        sex: "M", peakDecade: 2000 },
+  { rank:  588, name: "Rayan",         sex: "M", peakDecade: 2010 },
+  { rank:  589, name: "Vicente",       sex: "M", peakDecade: 2000 },
+  { rank:  590, name: "Maximilian",    sex: "M", peakDecade: 2010 },
+  { rank:  591, name: "Tru",           sex: "M", peakDecade: 2020 },
+  { rank:  592, name: "Jamir",         sex: "M", peakDecade: 2010 },
+  { rank:  593, name: "Gregory",       sex: "M", peakDecade: 1960 },
+  { rank:  594, name: "Kolton",        sex: "M", peakDecade: 2010 },
+  { rank:  595, name: "Mohammed",      sex: "M", peakDecade: 2010 },
+  { rank:  596, name: "Louie",         sex: "M", peakDecade: 1920 },
+  { rank:  597, name: "Kason",         sex: "M", peakDecade: 2010 },
+  { rank:  598, name: "Alden",         sex: "M", peakDecade: 2010 },
+  { rank:  599, name: "Jonas",         sex: "M", peakDecade: 2000 },
+  { rank:  600, name: "Kolter",        sex: "M", peakDecade: 2020 },
+  { rank:  601, name: "Krew",          sex: "M", peakDecade: 2020 },
+  { rank:  602, name: "Caiden",        sex: "M", peakDecade: 2010 },
+  { rank:  603, name: "Reese",         sex: "M", peakDecade: 2000 },
+  { rank:  604, name: "Amiri",         sex: "M", peakDecade: 2020 },
+  { rank:  605, name: "Nikolai",       sex: "M", peakDecade: 2010 },
+  { rank:  606, name: "Lachlan",       sex: "M", peakDecade: 2010 },
+  { rank:  607, name: "Abdiel",        sex: "M", peakDecade: 2010 },
+  { rank:  608, name: "Roland",        sex: "M", peakDecade: 1920 },
+  { rank:  609, name: "Zaiden",        sex: "M", peakDecade: 2010 },
+  { rank:  610, name: "Eziah",         sex: "M", peakDecade: 2020 },
+  { rank:  611, name: "Kyro",          sex: "M", peakDecade: 2020 },
+  { rank:  612, name: "Gunnar",        sex: "M", peakDecade: 2010 },
+  { rank:  613, name: "Jakari",        sex: "M", peakDecade: 2020 },
+  { rank:  614, name: "Albert",        sex: "M", peakDecade: 1920 },
+  { rank:  615, name: "Colby",         sex: "M", peakDecade: 2000 },
+  { rank:  616, name: "Yahya",         sex: "M", peakDecade: 2010 },
+  { rank:  617, name: "Harlan",        sex: "M", peakDecade: 1920 },
+  { rank:  618, name: "Jaiden",        sex: "M", peakDecade: 2010 },
+  { rank:  619, name: "Westley",       sex: "M", peakDecade: 2020 },
+  { rank:  620, name: "Boston",        sex: "M", peakDecade: 2010 },
+  { rank:  621, name: "Keegan",        sex: "M", peakDecade: 2000 },
+  { rank:  622, name: "Dominick",      sex: "M", peakDecade: 2000 },
+  { rank:  623, name: "Koen",          sex: "M", peakDecade: 2020 },
+  { rank:  624, name: "Kylian",        sex: "M", peakDecade: 2020 },
+  { rank:  625, name: "Gustavo",       sex: "M", peakDecade: 2000 },
+  { rank:  626, name: "Hassan",        sex: "M", peakDecade: 2010 },
+  { rank:  627, name: "Arturo",        sex: "M", peakDecade: 1990 },
+  { rank:  628, name: "Danny",         sex: "M", peakDecade: 1950 },
+  { rank:  629, name: "Jayceon",       sex: "M", peakDecade: 2010 },
+  { rank:  630, name: "Kenzo",         sex: "M", peakDecade: 2020 },
+  { rank:  631, name: "Sincere",       sex: "M", peakDecade: 2010 },
+  { rank:  632, name: "Nathanael",     sex: "M", peakDecade: 2000 },
+  { rank:  633, name: "Zayd",          sex: "M", peakDecade: 2020 },
+  { rank:  634, name: "Raul",          sex: "M", peakDecade: 1990 },
+  { rank:  635, name: "Izaiah",        sex: "M", peakDecade: 2010 },
+  { rank:  636, name: "Shane",         sex: "M", peakDecade: 1970 },
+  { rank:  637, name: "Leonard",       sex: "M", peakDecade: 1920 },
+  { rank:  638, name: "Ronald",        sex: "M", peakDecade: 1940 },
+  { rank:  639, name: "Kasai",         sex: "M", peakDecade: 2020 },
+  { rank:  640, name: "Memphis",       sex: "M", peakDecade: 2010 },
+  { rank:  641, name: "Julio",         sex: "M", peakDecade: 1990 },
+  { rank:  642, name: "Amias",         sex: "M", peakDecade: 2020 },
+  { rank:  643, name: "Samir",         sex: "M", peakDecade: 2010 },
+  { rank:  644, name: "Lochlan",       sex: "M", peakDecade: 2010 },
+  { rank:  645, name: "Azael",         sex: "M", peakDecade: 2020 },
+  { rank:  646, name: "Chris",         sex: "M", peakDecade: 1960 },
+  { rank:  647, name: "Sam",           sex: "M", peakDecade: 1920 },
+  { rank:  648, name: "Anakin",        sex: "M", peakDecade: 2020 },
+  { rank:  649, name: "Keanu",         sex: "M", peakDecade: 2020 },
+  { rank:  650, name: "Uriah",         sex: "M", peakDecade: 2010 },
+  { rank:  651, name: "Phillip",       sex: "M", peakDecade: 1950 },
+  { rank:  652, name: "Otis",          sex: "M", peakDecade: 1920 },
+  { rank:  653, name: "Princeton",     sex: "M", peakDecade: 2010 },
+  { rank:  654, name: "Quincy",        sex: "M", peakDecade: 2000 },
+  { rank:  655, name: "Wayne",         sex: "M", peakDecade: 1950 },
+  { rank:  656, name: "Azrael",        sex: "M", peakDecade: 2020 },
+  { rank:  657, name: "Jaime",         sex: "M", peakDecade: 1990 },
+  { rank:  658, name: "Tommy",         sex: "M", peakDecade: 1940 },
+  { rank:  659, name: "Lionel",        sex: "M", peakDecade: 2010 },
+  { rank:  660, name: "Valentin",      sex: "M", peakDecade: 2010 },
+  { rank:  661, name: "Aries",         sex: "M", peakDecade: 2020 },
+  { rank:  662, name: "Layne",         sex: "M", peakDecade: 2010 },
+  { rank:  663, name: "Creed",         sex: "M", peakDecade: 2020 },
+  { rank:  664, name: "Mauricio",      sex: "M", peakDecade: 2000 },
+  { rank:  665, name: "Yosef",         sex: "M", peakDecade: 2010 },
+  { rank:  666, name: "Chaim",         sex: "M", peakDecade: 2010 },
+  { rank:  667, name: "Jaxton",        sex: "M", peakDecade: 2010 },
+  { rank:  668, name: "Davis",         sex: "M", peakDecade: 2000 },
+  { rank:  669, name: "Ahmad",         sex: "M", peakDecade: 2000 },
+  { rank:  670, name: "Major",         sex: "M", peakDecade: 2010 },
+  { rank:  671, name: "Wylder",        sex: "M", peakDecade: 2020 },
+  { rank:  672, name: "Benicio",       sex: "M", peakDecade: 2020 },
+  { rank:  673, name: "Wilson",        sex: "M", peakDecade: 1910 },
+  { rank:  674, name: "Vincenzo",      sex: "M", peakDecade: 2010 },
+  { rank:  675, name: "Houston",       sex: "M", peakDecade: 2010 },
+  { rank:  676, name: "Madden",        sex: "M", peakDecade: 2010 },
+  { rank:  677, name: "Zaid",          sex: "M", peakDecade: 2010 },
+  { rank:  678, name: "Gerardo",       sex: "M", peakDecade: 2000 },
+  { rank:  679, name: "Salem",         sex: "M", peakDecade: 2020 },
+  { rank:  680, name: "Trevor",        sex: "M", peakDecade: 1990 },
+  { rank:  681, name: "Aurelio",       sex: "M", peakDecade: 2020 },
+  { rank:  682, name: "Shawn",         sex: "M", peakDecade: 1970 },
+  { rank:  683, name: "Jasiel",        sex: "M", peakDecade: 2020 },
+  { rank:  684, name: "Peyton",        sex: "M", peakDecade: 2000 },
+  { rank:  685, name: "Taylor",        sex: "M", peakDecade: 1990 },
+  { rank:  686, name: "Briar",         sex: "M", peakDecade: 2020 },
+  { rank:  687, name: "Omari",         sex: "M", peakDecade: 2010 },
+  { rank:  688, name: "Dereck",        sex: "M", peakDecade: 2020 },
+  { rank:  689, name: "Westin",        sex: "M", peakDecade: 2010 },
+  { rank:  690, name: "Donald",        sex: "M", peakDecade: 1930 },
+  { rank:  691, name: "Tomas",         sex: "M", peakDecade: 2000 },
+  { rank:  692, name: "Dax",           sex: "M", peakDecade: 2010 },
+  { rank:  693, name: "Dexter",        sex: "M", peakDecade: 2010 },
+  { rank:  694, name: "Idris",         sex: "M", peakDecade: 2020 },
+  { rank:  695, name: "Duke",          sex: "M", peakDecade: 2010 },
+  { rank:  696, name: "Mac",           sex: "M", peakDecade: 2020 },
+  { rank:  697, name: "Sevyn",         sex: "M", peakDecade: 2020 },
+  { rank:  698, name: "Evander",       sex: "M", peakDecade: 2020 },
+  { rank:  699, name: "Marvin",        sex: "M", peakDecade: 1930 },
+  { rank:  700, name: "Jayson",        sex: "M", peakDecade: 2000 },
+  { rank:  701, name: "Bridger",       sex: "M", peakDecade: 2010 },
+  { rank:  702, name: "Kareem",        sex: "M", peakDecade: 2010 },
+  { rank:  703, name: "Ahmed",         sex: "M", peakDecade: 2010 },
+  { rank:  704, name: "Bryer",         sex: "M", peakDecade: 2020 },
+  { rank:  705, name: "Robin",         sex: "M", peakDecade: 1950 },
+  { rank:  706, name: "Ryland",        sex: "M", peakDecade: 2010 },
+  { rank:  707, name: "Dennis",        sex: "M", peakDecade: 1950 },
+  { rank:  708, name: "Ozias",         sex: "M", peakDecade: 2020 },
+  { rank:  709, name: "Julien",        sex: "M", peakDecade: 2010 },
+  { rank:  710, name: "Aarav",         sex: "M", peakDecade: 2010 },
+  { rank:  711, name: "Aron",          sex: "M", peakDecade: 2000 },
+  { rank:  712, name: "Carmelo",       sex: "M", peakDecade: 2010 },
+  { rank:  713, name: "Kenai",         sex: "M", peakDecade: 2020 },
+  { rank:  714, name: "Layton",        sex: "M", peakDecade: 2010 },
+  { rank:  715, name: "Ryatt",         sex: "M", peakDecade: 2020 },
+  { rank:  716, name: "Wes",           sex: "M", peakDecade: 2020 },
+  { rank:  717, name: "Jase",          sex: "M", peakDecade: 2010 },
+  { rank:  718, name: "Kamden",        sex: "M", peakDecade: 2010 },
+  { rank:  719, name: "Nikolas",       sex: "M", peakDecade: 2000 },
+  { rank:  720, name: "Ocean",         sex: "M", peakDecade: 2020 },
+  { rank:  721, name: "Bellamy",       sex: "M", peakDecade: 2020 },
+  { rank:  722, name: "Cannon",        sex: "M", peakDecade: 2010 },
+  { rank:  723, name: "Neithan",       sex: "M", peakDecade: 2020 },
+  { rank:  724, name: "Westyn",        sex: "M", peakDecade: 2020 },
+  { rank:  725, name: "Braylen",       sex: "M", peakDecade: 2010 },
+  { rank:  726, name: "Jahmir",        sex: "M", peakDecade: 2020 },
+  { rank:  727, name: "Lee",           sex: "M", peakDecade: 1950 },
+  { rank:  728, name: "Ander",         sex: "M", peakDecade: 2020 },
+  { rank:  729, name: "Dustin",        sex: "M", peakDecade: 1980 },
+  { rank:  730, name: "Amos",          sex: "M", peakDecade: 1920 },
+  { rank:  731, name: "Marcel",        sex: "M", peakDecade: 2010 },
+  { rank:  732, name: "Hugh",          sex: "M", peakDecade: 1920 },
+  { rank:  733, name: "Case",          sex: "M", peakDecade: 2010 },
+  { rank:  734, name: "Misael",        sex: "M", peakDecade: 2000 },
+  { rank:  735, name: "Ambrose",       sex: "M", peakDecade: 2020 },
+  { rank:  736, name: "Huxley",        sex: "M", peakDecade: 2020 },
+  { rank:  737, name: "Mylo",          sex: "M", peakDecade: 2020 },
+  { rank:  738, name: "Zahir",         sex: "M", peakDecade: 2020 },
+  { rank:  739, name: "Rudy",          sex: "M", peakDecade: 1950 },
+  { rank:  740, name: "Bruno",         sex: "M", peakDecade: 2010 },
+  { rank:  741, name: "Yehuda",        sex: "M", peakDecade: 2010 },
+  { rank:  742, name: "Abram",         sex: "M", peakDecade: 2010 },
+  { rank:  743, name: "Clyde",         sex: "M", peakDecade: 1920 },
+  { rank:  744, name: "Brixton",       sex: "M", peakDecade: 2020 },
+  { rank:  745, name: "Yousef",        sex: "M", peakDecade: 2010 },
+  { rank:  746, name: "Enoch",         sex: "M", peakDecade: 2010 },
+  { rank:  747, name: "Franco",        sex: "M", peakDecade: 2010 },
+  { rank:  748, name: "Bode",          sex: "M", peakDecade: 2010 },
+  { rank:  749, name: "Azaiah",        sex: "M", peakDecade: 2020 },
+  { rank:  750, name: "Forest",        sex: "M", peakDecade: 1920 },
+  { rank:  751, name: "Matheo",        sex: "M", peakDecade: 2020 },
+  { rank:  752, name: "Junior",        sex: "M", peakDecade: 1920 },
+  { rank:  753, name: "Chandler",      sex: "M", peakDecade: 1990 },
+  { rank:  754, name: "Murphy",        sex: "M", peakDecade: 2020 },
+  { rank:  755, name: "Noe",           sex: "M", peakDecade: 2000 },
+  { rank:  756, name: "Salvador",      sex: "M", peakDecade: 1990 },
+  { rank:  757, name: "Finnley",       sex: "M", peakDecade: 2010 },
+  { rank:  758, name: "Trace",         sex: "M", peakDecade: 2000 },
+  { rank:  759, name: "Zyair",         sex: "M", peakDecade: 2020 },
+  { rank:  760, name: "Dario",         sex: "M", peakDecade: 2010 },
+  { rank:  761, name: "Mustafa",       sex: "M", peakDecade: 2010 },
+  { rank:  762, name: "Ayan",          sex: "M", peakDecade: 2010 },
+  { rank:  763, name: "Abdullah",      sex: "M", peakDecade: 2010 },
+  { rank:  764, name: "Campbell",      sex: "M", peakDecade: 2010 },
+  { rank:  765, name: "Magnus",        sex: "M", peakDecade: 2010 },
+  { rank:  766, name: "Santos",        sex: "M", peakDecade: 2000 },
+  { rank:  767, name: "Izael",         sex: "M", peakDecade: 2020 },
+  { rank:  768, name: "Brayan",        sex: "M", peakDecade: 2000 },
+  { rank:  769, name: "Boden",         sex: "M", peakDecade: 2010 },
+  { rank:  770, name: "Emmitt",        sex: "M", peakDecade: 2010 },
+  { rank:  771, name: "Keaton",        sex: "M", peakDecade: 2000 },
+  { rank:  772, name: "Reign",         sex: "M", peakDecade: 2020 },
+  { rank:  773, name: "Asaiah",        sex: "M", peakDecade: 2020 },
+  { rank:  774, name: "Truce",         sex: "M", peakDecade: 2020 },
+  { rank:  775, name: "Harry",         sex: "M", peakDecade: 1920 },
+  { rank:  776, name: "Riggs",         sex: "M", peakDecade: 2020 },
+  { rank:  777, name: "Alvaro",        sex: "M", peakDecade: 2000 },
+  { rank:  778, name: "Corey",         sex: "M", peakDecade: 1980 },
+  { rank:  779, name: "Dutton",        sex: "M", peakDecade: 2020 },
+  { rank:  780, name: "Zamir",         sex: "M", peakDecade: 2020 },
+  { rank:  781, name: "Blaze",         sex: "M", peakDecade: 2010 },
+  { rank:  782, name: "Kyree",         sex: "M", peakDecade: 2010 },
+  { rank:  783, name: "Skyler",        sex: "M", peakDecade: 2000 },
+  { rank:  784, name: "Tony",          sex: "M", peakDecade: 1960 },
+  { rank:  785, name: "Alonso",        sex: "M", peakDecade: 2010 },
+  { rank:  786, name: "Jamison",       sex: "M", peakDecade: 2010 },
+  { rank:  787, name: "Remi",          sex: "M", peakDecade: 2020 },
+  { rank:  788, name: "Darius",        sex: "M", peakDecade: 1990 },
+  { rank:  789, name: "Elisha",        sex: "M", peakDecade: 2000 },
+  { rank:  790, name: "Barron",        sex: "M", peakDecade: 2020 },
+  { rank:  791, name: "Fisher",        sex: "M", peakDecade: 2010 },
+  { rank:  792, name: "Ray",           sex: "M", peakDecade: 1920 },
+  { rank:  793, name: "Jaxxon",        sex: "M", peakDecade: 2020 },
+  { rank:  794, name: "Teo",           sex: "M", peakDecade: 2020 },
+  { rank:  795, name: "Haziel",        sex: "M", peakDecade: 2020 },
+  { rank:  796, name: "Everest",       sex: "M", peakDecade: 2020 },
+  { rank:  797, name: "Crue",          sex: "M", peakDecade: 2020 },
+  { rank:  798, name: "Thaddeus",      sex: "M", peakDecade: 2010 },
+  { rank:  799, name: "Calum",         sex: "M", peakDecade: 2020 },
+  { rank:  800, name: "Kaisen",        sex: "M", peakDecade: 2020 },
+  { rank:  801, name: "Keith",         sex: "M", peakDecade: 1960 },
+  { rank:  802, name: "Raylan",        sex: "M", peakDecade: 2010 },
+  { rank:  803, name: "Zeke",          sex: "M", peakDecade: 2010 },
+  { rank:  804, name: "Brewer",        sex: "M", peakDecade: 2020 },
+  { rank:  805, name: "Dilan",         sex: "M", peakDecade: 2010 },
+  { rank:  806, name: "Mccoy",         sex: "M", peakDecade: 2020 },
+  { rank:  807, name: "Douglas",       sex: "M", peakDecade: 1950 },
+  { rank:  808, name: "Lennon",        sex: "M", peakDecade: 2010 },
+  { rank:  809, name: "Azai",          sex: "M", peakDecade: 2020 },
+  { rank:  810, name: "Brock",         sex: "M", peakDecade: 2000 },
+  { rank:  811, name: "Jones",         sex: "M", peakDecade: 2020 },
+  { rank:  812, name: "Rohan",         sex: "M", peakDecade: 2000 },
+  { rank:  813, name: "Ty",            sex: "M", peakDecade: 2000 },
+  { rank:  814, name: "Benedict",      sex: "M", peakDecade: 2020 },
+  { rank:  815, name: "Emery",         sex: "M", peakDecade: 2010 },
+  { rank:  816, name: "Yahir",         sex: "M", peakDecade: 2000 },
+  { rank:  817, name: "Jrue",          sex: "M", peakDecade: 2020 },
+  { rank:  818, name: "Yael",          sex: "M", peakDecade: 2010 },
+  { rank:  819, name: "Alberto",       sex: "M", peakDecade: 1990 },
+  { rank:  820, name: "Alfredo",       sex: "M", peakDecade: 1990 },
+  { rank:  821, name: "Dane",          sex: "M", peakDecade: 1980 },
+  { rank:  822, name: "Ira",           sex: "M", peakDecade: 1920 },
+  { rank:  823, name: "Teddy",         sex: "M", peakDecade: 1950 },
+  { rank:  824, name: "Jettson",       sex: "M", peakDecade: 2020 },
+  { rank:  825, name: "Nelson",        sex: "M", peakDecade: 1950 },
+  { rank:  826, name: "Yisroel",       sex: "M", peakDecade: 2010 },
+  { rank:  827, name: "Drake",         sex: "M", peakDecade: 2000 },
+  { rank:  828, name: "Flynn",         sex: "M", peakDecade: 2010 },
+  { rank:  829, name: "Bjorn",         sex: "M", peakDecade: 2020 },
+  { rank:  830, name: "Ignacio",       sex: "M", peakDecade: 2000 },
+  { rank:  831, name: "Jefferson",     sex: "M", peakDecade: 2010 },
+  { rank:  832, name: "Avi",           sex: "M", peakDecade: 2010 },
+  { rank:  833, name: "Rayden",        sex: "M", peakDecade: 2010 },
+  { rank:  834, name: "Roger",         sex: "M", peakDecade: 1950 },
+  { rank:  835, name: "Cayson",        sex: "M", peakDecade: 2010 },
+  { rank:  836, name: "Kaiser",        sex: "M", peakDecade: 2020 },
+  { rank:  837, name: "Dakari",        sex: "M", peakDecade: 2020 },
+  { rank:  838, name: "Alvin",         sex: "M", peakDecade: 1920 },
+  { rank:  839, name: "Yadiel",        sex: "M", peakDecade: 2010 },
+  { rank:  840, name: "Alfred",        sex: "M", peakDecade: 1920 },
+  { rank:  841, name: "Benny",         sex: "M", peakDecade: 1940 },
+  { rank:  842, name: "Casen",         sex: "M", peakDecade: 2010 },
+  { rank:  843, name: "Ben",           sex: "M", peakDecade: 1920 },
+  { rank:  844, name: "Coleson",       sex: "M", peakDecade: 2020 },
+  { rank:  845, name: "Conor",         sex: "M", peakDecade: 1990 },
+  { rank:  846, name: "Cason",         sex: "M", peakDecade: 2010 },
+  { rank:  847, name: "Jimmy",         sex: "M", peakDecade: 1940 },
+  { rank:  848, name: "Braylon",       sex: "M", peakDecade: 2010 },
+  { rank:  849, name: "Waylen",        sex: "M", peakDecade: 2020 },
+  { rank:  850, name: "Derrick",       sex: "M", peakDecade: 1980 },
+  { rank:  851, name: "Neil",          sex: "M", peakDecade: 1950 },
+  { rank:  852, name: "Ramon",         sex: "M", peakDecade: 1980 },
+  { rank:  853, name: "Bear",          sex: "M", peakDecade: 2020 },
+  { rank:  854, name: "Jeremias",      sex: "M", peakDecade: 2010 },
+  { rank:  855, name: "Santana",       sex: "M", peakDecade: 2010 },
+  { rank:  856, name: "Zechariah",     sex: "M", peakDecade: 2010 },
+  { rank:  857, name: "Evren",         sex: "M", peakDecade: 2020 },
+  { rank:  858, name: "Avyaan",        sex: "M", peakDecade: 2020 },
+  { rank:  859, name: "Rex",           sex: "M", peakDecade: 1950 },
+  { rank:  860, name: "Aslan",         sex: "M", peakDecade: 2020 },
+  { rank:  861, name: "Eddie",         sex: "M", peakDecade: 1950 },
+  { rank:  862, name: "Lance",         sex: "M", peakDecade: 1970 },
+  { rank:  863, name: "Stanley",       sex: "M", peakDecade: 1950 },
+  { rank:  864, name: "Conner",        sex: "M", peakDecade: 2000 },
+  { rank:  865, name: "Jesiah",        sex: "M", peakDecade: 2010 },
+  { rank:  866, name: "Zev",           sex: "M", peakDecade: 2010 },
+  { rank:  867, name: "Alessio",       sex: "M", peakDecade: 2020 },
+  { rank:  868, name: "Brycen",        sex: "M", peakDecade: 2010 },
+  { rank:  869, name: "Carlo",         sex: "M", peakDecade: 1970 },
+  { rank:  870, name: "Edison",        sex: "M", peakDecade: 2010 },
+  { rank:  871, name: "Adler",         sex: "M", peakDecade: 2010 },
+  { rank:  872, name: "Aryan",         sex: "M", peakDecade: 2010 },
+  { rank:  873, name: "Orlando",       sex: "M", peakDecade: 1980 },
+  { rank:  874, name: "Abner",         sex: "M", peakDecade: 2010 },
+  { rank:  875, name: "Coast",         sex: "M", peakDecade: 2020 },
+  { rank:  876, name: "Jedidiah",      sex: "M", peakDecade: 2010 },
+  { rank:  877, name: "Joey",          sex: "M", peakDecade: 1960 },
+  { rank:  878, name: "Ernesto",       sex: "M", peakDecade: 1990 },
+  { rank:  879, name: "Kylen",         sex: "M", peakDecade: 2010 },
+  { rank:  880, name: "Denim",         sex: "M", peakDecade: 2020 },
+  { rank:  881, name: "Jireh",         sex: "M", peakDecade: 2020 },
+  { rank:  882, name: "Eren",          sex: "M", peakDecade: 2020 },
+  { rank:  883, name: "Emory",         sex: "M", peakDecade: 1920 },
+  { rank:  884, name: "Izan",          sex: "M", peakDecade: 2020 },
+  { rank:  885, name: "Jagger",        sex: "M", peakDecade: 2010 },
+  { rank:  886, name: "Jericho",       sex: "M", peakDecade: 2010 },
+  { rank:  887, name: "Kolson",        sex: "M", peakDecade: 2020 },
+  { rank:  888, name: "Leroy",         sex: "M", peakDecade: 1920 },
+  { rank:  889, name: "Reuben",        sex: "M", peakDecade: 1920 },
+  { rank:  890, name: "Trey",          sex: "M", peakDecade: 2000 },
+  { rank:  891, name: "Boaz",          sex: "M", peakDecade: 2020 },
+  { rank:  892, name: "Shepard",       sex: "M", peakDecade: 2020 },
+  { rank:  893, name: "Eliezer",       sex: "M", peakDecade: 2010 },
+  { rank:  894, name: "Hollis",        sex: "M", peakDecade: 1920 },
+  { rank:  895, name: "Ishaan",        sex: "M", peakDecade: 2010 },
+  { rank:  896, name: "Laith",         sex: "M", peakDecade: 2010 },
+  { rank:  897, name: "Alistair",      sex: "M", peakDecade: 2010 },
+  { rank:  898, name: "Kaleo",         sex: "M", peakDecade: 2020 },
+  { rank:  899, name: "Lucien",        sex: "M", peakDecade: 2010 },
+  { rank:  900, name: "Marcello",      sex: "M", peakDecade: 2010 },
+  { rank:  901, name: "Foster",        sex: "M", peakDecade: 2010 },
+  { rank:  902, name: "Guillermo",     sex: "M", peakDecade: 1990 },
+  { rank:  903, name: "Kael",          sex: "M", peakDecade: 2000 },
+  { rank:  904, name: "Kannon",        sex: "M", peakDecade: 2010 },
+  { rank:  905, name: "Nael",          sex: "M", peakDecade: 2020 },
+  { rank:  906, name: "Axton",         sex: "M", peakDecade: 2010 },
+  { rank:  907, name: "Jerry",         sex: "M", peakDecade: 1940 },
+  { rank:  908, name: "Rey",           sex: "M", peakDecade: 2010 },
+  { rank:  909, name: "Scottie",       sex: "M", peakDecade: 1970 },
+  { rank:  910, name: "Vihaan",        sex: "M", peakDecade: 2010 },
+  { rank:  911, name: "Yitzchok",      sex: "M", peakDecade: 2010 },
+  { rank:  912, name: "Koah",          sex: "M", peakDecade: 2020 },
+  { rank:  913, name: "Beck",          sex: "M", peakDecade: 2010 },
+  { rank:  914, name: "Ezrah",         sex: "M", peakDecade: 2020 },
+  { rank:  915, name: "Issac",         sex: "M", peakDecade: 2000 },
+  { rank:  916, name: "Stone",         sex: "M", peakDecade: 2000 },
+  { rank:  917, name: "Leif",          sex: "M", peakDecade: 2010 },
+  { rank:  918, name: "Makari",        sex: "M", peakDecade: 2020 },
+  { rank:  919, name: "Wesson",        sex: "M", peakDecade: 2020 },
+  { rank:  920, name: "Aspen",         sex: "M", peakDecade: 2020 },
+  { rank:  921, name: "Eitan",         sex: "M", peakDecade: 2020 },
+  { rank:  922, name: "Frankie",       sex: "M", peakDecade: 1950 },
+  { rank:  923, name: "Shmuel",        sex: "M", peakDecade: 2010 },
+  { rank:  924, name: "Casper",        sex: "M", peakDecade: 2020 },
+  { rank:  925, name: "Kiaan",         sex: "M", peakDecade: 2020 },
+  { rank:  926, name: "Neythan",       sex: "M", peakDecade: 2020 },
+  { rank:  927, name: "Caius",         sex: "M", peakDecade: 2010 },
+  { rank:  928, name: "Darian",        sex: "M", peakDecade: 1990 },
+  { rank:  929, name: "Agastya",       sex: "M", peakDecade: 2020 },
+  { rank:  930, name: "Dillon",        sex: "M", peakDecade: 1990 },
+  { rank:  931, name: "Halo",          sex: "M", peakDecade: 2020 },
+  { rank:  932, name: "Heath",         sex: "M", peakDecade: 1970 },
+  { rank:  933, name: "Isa",           sex: "M", peakDecade: 2020 },
+  { rank:  934, name: "Judson",        sex: "M", peakDecade: 2010 },
+  { rank:  935, name: "Jairo",         sex: "M", peakDecade: 2000 },
+  { rank:  936, name: "Kreed",         sex: "M", peakDecade: 2020 },
+  { rank:  937, name: "Krue",          sex: "M", peakDecade: 2020 },
+  { rank:  938, name: "Massimo",       sex: "M", peakDecade: 2020 },
+  { rank:  939, name: "Syaire",        sex: "M", peakDecade: 2020 },
+  { rank:  940, name: "Khalid",        sex: "M", peakDecade: 2010 },
+  { rank:  941, name: "Rowdy",         sex: "M", peakDecade: 2020 },
+  { rank:  942, name: "Veer",          sex: "M", peakDecade: 2010 },
+  { rank:  943, name: "Eugene",        sex: "M", peakDecade: 1920 },
+  { rank:  944, name: "Kenji",         sex: "M", peakDecade: 2020 },
+  { rank:  945, name: "Salvatore",     sex: "M", peakDecade: 1920 },
+  { rank:  946, name: "Zymir",         sex: "M", peakDecade: 2020 },
+  { rank:  947, name: "Zyon",          sex: "M", peakDecade: 2010 },
+  { rank:  948, name: "Meir",          sex: "M", peakDecade: 2010 },
+  { rank:  949, name: "Ricky",         sex: "M", peakDecade: 1950 },
+  { rank:  950, name: "Josias",        sex: "M", peakDecade: 2010 },
+  { rank:  951, name: "Jon",           sex: "M", peakDecade: 1960 },
+  { rank:  952, name: "Agustin",       sex: "M", peakDecade: 2000 },
+  { rank:  953, name: "Jethro",        sex: "M", peakDecade: 2020 },
+  { rank:  954, name: "Mitchell",      sex: "M", peakDecade: 1990 },
+  { rank:  955, name: "Felipe",        sex: "M", peakDecade: 2000 },
+  { rank:  956, name: "Gian",          sex: "M", peakDecade: 2020 },
+  { rank:  957, name: "Legacy",        sex: "M", peakDecade: 2020 },
+  { rank:  958, name: "Damari",        sex: "M", peakDecade: 2010 },
+  { rank:  959, name: "Melvin",        sex: "M", peakDecade: 1920 },
+  { rank:  960, name: "Aldo",          sex: "M", peakDecade: 2000 },
+  { rank:  961, name: "Darwin",        sex: "M", peakDecade: 1950 },
+  { rank:  962, name: "Montgomery",    sex: "M", peakDecade: 2020 },
+  { rank:  963, name: "Shimon",        sex: "M", peakDecade: 2010 },
+  { rank:  964, name: "Wallace",       sex: "M", peakDecade: 1920 },
+  { rank:  965, name: "Arian",         sex: "M", peakDecade: 2010 },
+  { rank:  966, name: "Colten",        sex: "M", peakDecade: 2010 },
+  { rank:  967, name: "Mordechai",     sex: "M", peakDecade: 2010 },
+  { rank:  968, name: "Quentin",       sex: "M", peakDecade: 2000 },
+  { rank:  969, name: "Imran",         sex: "M", peakDecade: 2010 },
+  { rank:  970, name: "Beaux",         sex: "M", peakDecade: 2020 },
+  { rank:  971, name: "Harlem",        sex: "M", peakDecade: 2010 },
+  { rank:  972, name: "Van",           sex: "M", peakDecade: 1950 },
+  { rank:  973, name: "Gage",          sex: "M", peakDecade: 2000 },
+  { rank:  974, name: "Kaycen",        sex: "M", peakDecade: 2020 },
+  { rank:  975, name: "Mathew",        sex: "M", peakDecade: 1980 },
+  { rank:  976, name: "Quinton",       sex: "M", peakDecade: 1990 },
+  { rank:  977, name: "Alec",          sex: "M", peakDecade: 1990 },
+  { rank:  978, name: "Azlan",         sex: "M", peakDecade: 2020 },
+  { rank:  979, name: "Toby",          sex: "M", peakDecade: 1970 },
+  { rank:  980, name: "Ameer",         sex: "M", peakDecade: 2010 },
+  { rank:  981, name: "Byron",         sex: "M", peakDecade: 1960 },
+  { rank:  982, name: "Damir",         sex: "M", peakDecade: 2020 },
+  { rank:  983, name: "Loyal",         sex: "M", peakDecade: 2020 },
+  { rank:  984, name: "Anders",        sex: "M", peakDecade: 2010 },
+  { rank:  985, name: "Curtis",        sex: "M", peakDecade: 1960 },
+  { rank:  986, name: "Dominik",       sex: "M", peakDecade: 2010 },
+  { rank:  987, name: "Joan",          sex: "M", peakDecade: 2000 },
+  { rank:  988, name: "Ephraim",       sex: "M", peakDecade: 2010 },
+  { rank:  989, name: "Isael",         sex: "M", peakDecade: 2020 },
+  { rank:  990, name: "Jiraiya",       sex: "M", peakDecade: 2020 },
+  { rank:  991, name: "Aurelius",      sex: "M", peakDecade: 2020 },
+  { rank:  992, name: "Blaine",        sex: "M", peakDecade: 2000 },
+  { rank:  993, name: "Harold",        sex: "M", peakDecade: 1920 },
+  { rank:  994, name: "Joe",           sex: "M", peakDecade: 1940 },
+  { rank:  995, name: "Palmer",        sex: "M", peakDecade: 2010 },
+  { rank:  996, name: "Landry",        sex: "M", peakDecade: 2010 },
+  { rank:  997, name: "Oziel",         sex: "M", peakDecade: 2020 },
+  { rank:  998, name: "Macklin",       sex: "M", peakDecade: 2020 },
+  { rank:  999, name: "Kabir",         sex: "M", peakDecade: 2020 },
+  { rank: 1000, name: "Langston",      sex: "M", peakDecade: 2010 },
+
+  // ===== GIRLS (rank, name, sex, peakDecade) — SSA 2025 Top 1000 =====
+  { rank:    1, name: "Olivia",        sex: "F", peakDecade: 2010 },
+  { rank:    2, name: "Charlotte",     sex: "F", peakDecade: 2010 },
+  { rank:    3, name: "Emma",          sex: "F", peakDecade: 2010 },
+  { rank:    4, name: "Amelia",        sex: "F", peakDecade: 2010 },
+  { rank:    5, name: "Sophia",        sex: "F", peakDecade: 2010 },
+  { rank:    6, name: "Mia",           sex: "F", peakDecade: 2010 },
+  { rank:    7, name: "Isabella",      sex: "F", peakDecade: 2010 },
+  { rank:    8, name: "Evelyn",        sex: "F", peakDecade: 1920 },
+  { rank:    9, name: "Sofia",         sex: "F", peakDecade: 2010 },
+  { rank:   10, name: "Eliana",        sex: "F", peakDecade: 2020 },
+  { rank:   11, name: "Ava",           sex: "F", peakDecade: 2010 },
+  { rank:   12, name: "Eleanor",       sex: "F", peakDecade: 1920 },
+  { rank:   13, name: "Violet",        sex: "F", peakDecade: 2010 },
+  { rank:   14, name: "Ailany",        sex: "F", peakDecade: 2020 },
+  { rank:   15, name: "Aurora",        sex: "F", peakDecade: 2020 },
+  { rank:   16, name: "Harper",        sex: "F", peakDecade: 2010 },
+  { rank:   17, name: "Elizabeth",     sex: "F", peakDecade: 1980 },
+  { rank:   18, name: "Lily",          sex: "F", peakDecade: 2010 },
+  { rank:   19, name: "Camila",        sex: "F", peakDecade: 2010 },
+  { rank:   20, name: "Nora",          sex: "F", peakDecade: 2010 },
+  { rank:   21, name: "Hazel",         sex: "F", peakDecade: 1920 },
+  { rank:   22, name: "Penelope",      sex: "F", peakDecade: 2010 },
+  { rank:   23, name: "Chloe",         sex: "F", peakDecade: 2000 },
+  { rank:   24, name: "Ellie",         sex: "F", peakDecade: 2010 },
+  { rank:   25, name: "Lucy",          sex: "F", peakDecade: 2010 },
+  { rank:   26, name: "Aria",          sex: "F", peakDecade: 2010 },
+  { rank:   27, name: "Luna",          sex: "F", peakDecade: 2020 },
+  { rank:   28, name: "Isla",          sex: "F", peakDecade: 2020 },
+  { rank:   29, name: "Ella",          sex: "F", peakDecade: 2010 },
+  { rank:   30, name: "Lainey",        sex: "F", peakDecade: 2020 },
+  { rank:   31, name: "Zoe",           sex: "F", peakDecade: 2010 },
+  { rank:   32, name: "Scarlett",      sex: "F", peakDecade: 2010 },
+  { rank:   33, name: "Gianna",        sex: "F", peakDecade: 2020 },
+  { rank:   34, name: "Emily",         sex: "F", peakDecade: 1990 },
+  { rank:   35, name: "Valentina",     sex: "F", peakDecade: 2010 },
+  { rank:   36, name: "Layla",         sex: "F", peakDecade: 2010 },
+  { rank:   37, name: "Avery",         sex: "F", peakDecade: 2010 },
+  { rank:   38, name: "Grace",         sex: "F", peakDecade: 2000 },
+  { rank:   39, name: "Ivy",           sex: "F", peakDecade: 2020 },
+  { rank:   40, name: "Madison",       sex: "F", peakDecade: 2000 },
+  { rank:   41, name: "Abigail",       sex: "F", peakDecade: 2000 },
+  { rank:   42, name: "Elena",         sex: "F", peakDecade: 2010 },
+  { rank:   43, name: "Mila",          sex: "F", peakDecade: 2010 },
+  { rank:   44, name: "Willow",        sex: "F", peakDecade: 2020 },
+  { rank:   45, name: "Emilia",        sex: "F", peakDecade: 2020 },
+  { rank:   46, name: "Nova",          sex: "F", peakDecade: 2020 },
+  { rank:   47, name: "Naomi",         sex: "F", peakDecade: 2010 },
+  { rank:   48, name: "Riley",         sex: "F", peakDecade: 2010 },
+  { rank:   49, name: "Eloise",        sex: "F", peakDecade: 2020 },
+  { rank:   50, name: "Sadie",         sex: "F", peakDecade: 2010 },
+  { rank:   51, name: "Delilah",       sex: "F", peakDecade: 2010 },
+  { rank:   52, name: "Stella",        sex: "F", peakDecade: 2010 },
+  { rank:   53, name: "Josephine",     sex: "F", peakDecade: 1920 },
+  { rank:   54, name: "Victoria",      sex: "F", peakDecade: 1990 },
+  { rank:   55, name: "Sophie",        sex: "F", peakDecade: 2010 },
+  { rank:   56, name: "Hannah",        sex: "F", peakDecade: 1990 },
+  { rank:   57, name: "Lillian",       sex: "F", peakDecade: 1920 },
+  { rank:   58, name: "Leah",          sex: "F", peakDecade: 2010 },
+  { rank:   59, name: "Adeline",       sex: "F", peakDecade: 2010 },
+  { rank:   60, name: "Leilani",       sex: "F", peakDecade: 2020 },
+  { rank:   61, name: "Iris",          sex: "F", peakDecade: 2020 },
+  { rank:   62, name: "Maya",          sex: "F", peakDecade: 2000 },
+  { rank:   63, name: "Clara",         sex: "F", peakDecade: 1920 },
+  { rank:   64, name: "Ruby",          sex: "F", peakDecade: 1920 },
+  { rank:   65, name: "Alice",         sex: "F", peakDecade: 1920 },
+  { rank:   66, name: "Genesis",       sex: "F", peakDecade: 2010 },
+  { rank:   67, name: "Paisley",       sex: "F", peakDecade: 2010 },
+  { rank:   68, name: "Claire",        sex: "F", peakDecade: 2010 },
+  { rank:   69, name: "Zoey",          sex: "F", peakDecade: 2010 },
+  { rank:   70, name: "Eden",          sex: "F", peakDecade: 2010 },
+  { rank:   71, name: "Madelyn",       sex: "F", peakDecade: 2010 },
+  { rank:   72, name: "Vivian",        sex: "F", peakDecade: 1920 },
+  { rank:   73, name: "Millie",        sex: "F", peakDecade: 2020 },
+  { rank:   74, name: "Emery",         sex: "F", peakDecade: 2010 },
+  { rank:   75, name: "Daisy",         sex: "F", peakDecade: 2000 },
+  { rank:   76, name: "Maeve",         sex: "F", peakDecade: 2020 },
+  { rank:   77, name: "Ayla",          sex: "F", peakDecade: 2020 },
+  { rank:   78, name: "Liliana",       sex: "F", peakDecade: 2010 },
+  { rank:   79, name: "Melody",        sex: "F", peakDecade: 2010 },
+  { rank:   80, name: "Lyla",          sex: "F", peakDecade: 2010 },
+  { rank:   81, name: "Madeline",      sex: "F", peakDecade: 2000 },
+  { rank:   82, name: "Josie",         sex: "F", peakDecade: 2020 },
+  { rank:   83, name: "Lucia",         sex: "F", peakDecade: 2010 },
+  { rank:   84, name: "Addison",       sex: "F", peakDecade: 2010 },
+  { rank:   85, name: "Kennedy",       sex: "F", peakDecade: 2010 },
+  { rank:   86, name: "Audrey",        sex: "F", peakDecade: 2010 },
+  { rank:   87, name: "Maria",         sex: "F", peakDecade: 1960 },
+  { rank:   88, name: "Autumn",        sex: "F", peakDecade: 2000 },
+  { rank:   89, name: "Natalie",       sex: "F", peakDecade: 2000 },
+  { rank:   90, name: "Sarah",         sex: "F", peakDecade: 1980 },
+  { rank:   91, name: "Everly",        sex: "F", peakDecade: 2020 },
+  { rank:   92, name: "Lydia",         sex: "F", peakDecade: 2010 },
+  { rank:   93, name: "Kinsley",       sex: "F", peakDecade: 2010 },
+  { rank:   94, name: "Sienna",        sex: "F", peakDecade: 2010 },
+  { rank:   95, name: "Jade",          sex: "F", peakDecade: 2000 },
+  { rank:   96, name: "Caroline",      sex: "F", peakDecade: 2000 },
+  { rank:   97, name: "Quinn",         sex: "F", peakDecade: 2010 },
+  { rank:   98, name: "Amara",         sex: "F", peakDecade: 2020 },
+  { rank:   99, name: "Georgia",       sex: "F", peakDecade: 1920 },
+  { rank:  100, name: "Juniper",       sex: "F", peakDecade: 2020 },
+  { rank:  101, name: "Aaliyah",       sex: "F", peakDecade: 2010 },
+  { rank:  102, name: "Margot",        sex: "F", peakDecade: 2020 },
+  { rank:  103, name: "Allison",       sex: "F", peakDecade: 1990 },
+  { rank:  104, name: "Hailey",        sex: "F", peakDecade: 2000 },
+  { rank:  105, name: "Gabriella",     sex: "F", peakDecade: 2010 },
+  { rank:  106, name: "Parker",        sex: "F", peakDecade: 2020 },
+  { rank:  107, name: "Anna",          sex: "F", peakDecade: 1920 },
+  { rank:  108, name: "Cecilia",       sex: "F", peakDecade: 2010 },
+  { rank:  109, name: "Athena",        sex: "F", peakDecade: 2010 },
+  { rank:  110, name: "Juliette",      sex: "F", peakDecade: 2010 },
+  { rank:  111, name: "Catalina",      sex: "F", peakDecade: 2020 },
+  { rank:  112, name: "Margaret",      sex: "F", peakDecade: 1920 },
+  { rank:  113, name: "Cora",          sex: "F", peakDecade: 2010 },
+  { rank:  114, name: "Rose",          sex: "F", peakDecade: 1920 },
+  { rank:  115, name: "Eliza",         sex: "F", peakDecade: 2010 },
+  { rank:  116, name: "Raelynn",       sex: "F", peakDecade: 2010 },
+  { rank:  117, name: "Alaia",         sex: "F", peakDecade: 2020 },
+  { rank:  118, name: "Brooklyn",      sex: "F", peakDecade: 2010 },
+  { rank:  119, name: "Esther",        sex: "F", peakDecade: 1920 },
+  { rank:  120, name: "Hallie",        sex: "F", peakDecade: 2020 },
+  { rank:  121, name: "Hadley",        sex: "F", peakDecade: 2010 },
+  { rank:  122, name: "Emerson",       sex: "F", peakDecade: 2010 },
+  { rank:  123, name: "Elsie",         sex: "F", peakDecade: 1920 },
+  { rank:  124, name: "Magnolia",      sex: "F", peakDecade: 2020 },
+  { rank:  125, name: "Mary",          sex: "F", peakDecade: 1920 },
+  { rank:  126, name: "Scottie",       sex: "F", peakDecade: 2020 },
+  { rank:  127, name: "Valerie",       sex: "F", peakDecade: 1960 },
+  { rank:  128, name: "Ariana",        sex: "F", peakDecade: 2010 },
+  { rank:  129, name: "Serenity",      sex: "F", peakDecade: 2010 },
+  { rank:  130, name: "Alina",         sex: "F", peakDecade: 2010 },
+  { rank:  131, name: "Julia",         sex: "F", peakDecade: 2000 },
+  { rank:  132, name: "Amira",         sex: "F", peakDecade: 2020 },
+  { rank:  133, name: "Charlie",       sex: "F", peakDecade: 2010 },
+  { rank:  134, name: "Eva",           sex: "F", peakDecade: 1920 },
+  { rank:  135, name: "Savannah",      sex: "F", peakDecade: 2000 },
+  { rank:  136, name: "Bella",         sex: "F", peakDecade: 2010 },
+  { rank:  137, name: "Rylee",         sex: "F", peakDecade: 2010 },
+  { rank:  138, name: "Emersyn",       sex: "F", peakDecade: 2020 },
+  { rank:  139, name: "Elliana",       sex: "F", peakDecade: 2020 },
+  { rank:  140, name: "Alana",         sex: "F", peakDecade: 2000 },
+  { rank:  141, name: "Sloane",        sex: "F", peakDecade: 2020 },
+  { rank:  142, name: "Melanie",       sex: "F", peakDecade: 1970 },
+  { rank:  143, name: "Brielle",       sex: "F", peakDecade: 2010 },
+  { rank:  144, name: "Natalia",       sex: "F", peakDecade: 2010 },
+  { rank:  145, name: "Remi",          sex: "F", peakDecade: 2020 },
+  { rank:  146, name: "Aubrey",        sex: "F", peakDecade: 2010 },
+  { rank:  147, name: "Evangeline",    sex: "F", peakDecade: 2010 },
+  { rank:  148, name: "Genevieve",     sex: "F", peakDecade: 1920 },
+  { rank:  149, name: "Kehlani",       sex: "F", peakDecade: 2020 },
+  { rank:  150, name: "June",          sex: "F", peakDecade: 1920 },
+  { rank:  151, name: "Samantha",      sex: "F", peakDecade: 1990 },
+  { rank:  152, name: "Summer",        sex: "F", peakDecade: 2000 },
+  { rank:  153, name: "Oaklynn",       sex: "F", peakDecade: 2020 },
+  { rank:  154, name: "Ember",         sex: "F", peakDecade: 2020 },
+  { rank:  155, name: "Piper",         sex: "F", peakDecade: 2010 },
+  { rank:  156, name: "Oakley",        sex: "F", peakDecade: 2020 },
+  { rank:  157, name: "Phoebe",        sex: "F", peakDecade: 2010 },
+  { rank:  158, name: "Arya",          sex: "F", peakDecade: 2010 },
+  { rank:  159, name: "Wrenley",       sex: "F", peakDecade: 2020 },
+  { rank:  160, name: "Sage",          sex: "F", peakDecade: 2020 },
+  { rank:  161, name: "Alani",         sex: "F", peakDecade: 2020 },
+  { rank:  162, name: "Valeria",       sex: "F", peakDecade: 2000 },
+  { rank:  163, name: "Anastasia",     sex: "F", peakDecade: 2010 },
+  { rank:  164, name: "Ashley",        sex: "F", peakDecade: 1980 },
+  { rank:  165, name: "Nevaeh",        sex: "F", peakDecade: 2010 },
+  { rank:  166, name: "Isabelle",      sex: "F", peakDecade: 2000 },
+  { rank:  167, name: "Skylar",        sex: "F", peakDecade: 2010 },
+  { rank:  168, name: "Ailani",        sex: "F", peakDecade: 2020 },
+  { rank:  169, name: "Blair",         sex: "F", peakDecade: 2020 },
+  { rank:  170, name: "Gemma",         sex: "F", peakDecade: 2010 },
+  { rank:  171, name: "Rosalie",       sex: "F", peakDecade: 1930 },
+  { rank:  172, name: "Vivienne",      sex: "F", peakDecade: 2010 },
+  { rank:  173, name: "Ruth",          sex: "F", peakDecade: 1920 },
+  { rank:  174, name: "Ariella",       sex: "F", peakDecade: 2020 },
+  { rank:  175, name: "Callie",        sex: "F", peakDecade: 2010 },
+  { rank:  176, name: "Freya",         sex: "F", peakDecade: 2020 },
+  { rank:  177, name: "Isabel",        sex: "F", peakDecade: 2000 },
+  { rank:  178, name: "Daphne",        sex: "F", peakDecade: 2010 },
+  { rank:  179, name: "Lilah",         sex: "F", peakDecade: 2010 },
+  { rank:  180, name: "Amaya",         sex: "F", peakDecade: 2010 },
+  { rank:  181, name: "Sutton",        sex: "F", peakDecade: 2020 },
+  { rank:  182, name: "Annie",         sex: "F", peakDecade: 1920 },
+  { rank:  183, name: "Ximena",        sex: "F", peakDecade: 2010 },
+  { rank:  184, name: "Adalynn",       sex: "F", peakDecade: 2010 },
+  { rank:  185, name: "Kaylani",       sex: "F", peakDecade: 2020 },
+  { rank:  186, name: "Katherine",     sex: "F", peakDecade: 1980 },
+  { rank:  187, name: "Lila",          sex: "F", peakDecade: 2010 },
+  { rank:  188, name: "Celeste",       sex: "F", peakDecade: 2000 },
+  { rank:  189, name: "Tatum",         sex: "F", peakDecade: 2010 },
+  { rank:  190, name: "Haven",         sex: "F", peakDecade: 2010 },
+  { rank:  191, name: "Blakely",       sex: "F", peakDecade: 2020 },
+  { rank:  192, name: "Reese",         sex: "F", peakDecade: 2010 },
+  { rank:  193, name: "Kaia",          sex: "F", peakDecade: 2020 },
+  { rank:  194, name: "Everleigh",     sex: "F", peakDecade: 2020 },
+  { rank:  195, name: "Alora",         sex: "F", peakDecade: 2020 },
+  { rank:  196, name: "Molly",         sex: "F", peakDecade: 1990 },
+  { rank:  197, name: "Olive",         sex: "F", peakDecade: 1910 },
+  { rank:  198, name: "Sara",          sex: "F", peakDecade: 1980 },
+  { rank:  199, name: "Peyton",        sex: "F", peakDecade: 2010 },
+  { rank:  200, name: "Lia",           sex: "F", peakDecade: 2010 },
+  { rank:  201, name: "Mabel",         sex: "F", peakDecade: 1910 },
+  { rank:  202, name: "Noelle",        sex: "F", peakDecade: 2010 },
+  { rank:  203, name: "Stevie",        sex: "F", peakDecade: 2020 },
+  { rank:  204, name: "Kylie",         sex: "F", peakDecade: 2000 },
+  { rank:  205, name: "Vera",          sex: "F", peakDecade: 1920 },
+  { rank:  206, name: "Jasmine",       sex: "F", peakDecade: 1990 },
+  { rank:  207, name: "Celine",        sex: "F", peakDecade: 2020 },
+  { rank:  208, name: "Adaline",       sex: "F", peakDecade: 2020 },
+  { rank:  209, name: "Bailey",        sex: "F", peakDecade: 2000 },
+  { rank:  210, name: "Myla",          sex: "F", peakDecade: 2010 },
+  { rank:  211, name: "Aitana",        sex: "F", peakDecade: 2020 },
+  { rank:  212, name: "Zara",          sex: "F", peakDecade: 2010 },
+  { rank:  213, name: "Arabella",      sex: "F", peakDecade: 2010 },
+  { rank:  214, name: "Lennon",        sex: "F", peakDecade: 2020 },
+  { rank:  215, name: "Dahlia",        sex: "F", peakDecade: 2010 },
+  { rank:  216, name: "Selah",         sex: "F", peakDecade: 2010 },
+  { rank:  217, name: "Saylor",        sex: "F", peakDecade: 2020 },
+  { rank:  218, name: "Elianna",       sex: "F", peakDecade: 2020 },
+  { rank:  219, name: "Ada",           sex: "F", peakDecade: 1910 },
+  { rank:  220, name: "River",         sex: "F", peakDecade: 2020 },
+  { rank:  221, name: "Jane",          sex: "F", peakDecade: 1950 },
+  { rank:  222, name: "Brianna",       sex: "F", peakDecade: 2000 },
+  { rank:  223, name: "Elise",         sex: "F", peakDecade: 2010 },
+  { rank:  224, name: "Alaina",        sex: "F", peakDecade: 2010 },
+  { rank:  225, name: "Presley",       sex: "F", peakDecade: 2010 },
+  { rank:  226, name: "Noa",           sex: "F", peakDecade: 2020 },
+  { rank:  227, name: "Gracie",        sex: "F", peakDecade: 2000 },
+  { rank:  228, name: "Mackenzie",     sex: "F", peakDecade: 2000 },
+  { rank:  229, name: "Kiara",         sex: "F", peakDecade: 2000 },
+  { rank:  230, name: "Rory",          sex: "F", peakDecade: 2020 },
+  { rank:  231, name: "Wren",          sex: "F", peakDecade: 2020 },
+  { rank:  232, name: "Palmer",        sex: "F", peakDecade: 2020 },
+  { rank:  233, name: "Maisie",        sex: "F", peakDecade: 2020 },
+  { rank:  234, name: "Arianna",       sex: "F", peakDecade: 2010 },
+  { rank:  235, name: "Andrea",        sex: "F", peakDecade: 1980 },
+  { rank:  236, name: "Nyla",          sex: "F", peakDecade: 2010 },
+  { rank:  237, name: "Alexandra",     sex: "F", peakDecade: 1990 },
+  { rank:  238, name: "Cataleya",      sex: "F", peakDecade: 2020 },
+  { rank:  239, name: "Lucille",       sex: "F", peakDecade: 1920 },
+  { rank:  240, name: "Camille",       sex: "F", peakDecade: 2010 },
+  { rank:  241, name: "Collins",       sex: "F", peakDecade: 2020 },
+  { rank:  242, name: "Delaney",       sex: "F", peakDecade: 2000 },
+  { rank:  243, name: "Brynlee",       sex: "F", peakDecade: 2010 },
+  { rank:  244, name: "Diana",         sex: "F", peakDecade: 1950 },
+  { rank:  245, name: "Ana",           sex: "F", peakDecade: 1990 },
+  { rank:  246, name: "Miriam",        sex: "F", peakDecade: 1920 },
+  { rank:  247, name: "Amora",         sex: "F", peakDecade: 2020 },
+  { rank:  248, name: "Reagan",        sex: "F", peakDecade: 2010 },
+  { rank:  249, name: "Rowan",         sex: "F", peakDecade: 2010 },
+  { rank:  250, name: "Rachel",        sex: "F", peakDecade: 1990 },
+  { rank:  251, name: "Rosemary",      sex: "F", peakDecade: 1940 },
+  { rank:  252, name: "Lilly",         sex: "F", peakDecade: 2010 },
+  { rank:  253, name: "Kailani",       sex: "F", peakDecade: 2020 },
+  { rank:  254, name: "Faith",         sex: "F", peakDecade: 2000 },
+  { rank:  255, name: "Kaylee",        sex: "F", peakDecade: 2000 },
+  { rank:  256, name: "Juliana",       sex: "F", peakDecade: 2000 },
+  { rank:  257, name: "Amy",           sex: "F", peakDecade: 1970 },
+  { rank:  258, name: "Journee",       sex: "F", peakDecade: 2020 },
+  { rank:  259, name: "Leila",         sex: "F", peakDecade: 2010 },
+  { rank:  260, name: "Adalyn",        sex: "F", peakDecade: 2010 },
+  { rank:  261, name: "Mariana",       sex: "F", peakDecade: 2000 },
+  { rank:  262, name: "Norah",         sex: "F", peakDecade: 2010 },
+  { rank:  263, name: "Aliyah",        sex: "F", peakDecade: 2010 },
+  { rank:  264, name: "Ophelia",       sex: "F", peakDecade: 2020 },
+  { rank:  265, name: "Talia",         sex: "F", peakDecade: 2010 },
+  { rank:  266, name: "Aspen",         sex: "F", peakDecade: 2010 },
+  { rank:  267, name: "Elaina",        sex: "F", peakDecade: 2010 },
+  { rank:  268, name: "Selena",        sex: "F", peakDecade: 1990 },
+  { rank:  269, name: "Arleth",        sex: "F", peakDecade: 2020 },
+  { rank:  270, name: "Evie",          sex: "F", peakDecade: 2010 },
+  { rank:  271, name: "Nayeli",        sex: "F", peakDecade: 2000 },
+  { rank:  272, name: "Khloe",         sex: "F", peakDecade: 2010 },
+  { rank:  273, name: "Luciana",       sex: "F", peakDecade: 2010 },
+  { rank:  274, name: "Juliet",        sex: "F", peakDecade: 2010 },
+  { rank:  275, name: "Lola",          sex: "F", peakDecade: 1920 },
+  { rank:  276, name: "Harmony",       sex: "F", peakDecade: 2010 },
+  { rank:  277, name: "Lilith",        sex: "F", peakDecade: 2020 },
+  { rank:  278, name: "Azalea",        sex: "F", peakDecade: 2020 },
+  { rank:  279, name: "Lena",          sex: "F", peakDecade: 1910 },
+  { rank:  280, name: "Alanna",        sex: "F", peakDecade: 2000 },
+  { rank:  281, name: "Shiloh",        sex: "F", peakDecade: 2020 },
+  { rank:  282, name: "Sylvie",        sex: "F", peakDecade: 2020 },
+  { rank:  283, name: "Rosie",         sex: "F", peakDecade: 1920 },
+  { rank:  284, name: "Antonella",     sex: "F", peakDecade: 2020 },
+  { rank:  285, name: "Julieta",       sex: "F", peakDecade: 2020 },
+  { rank:  286, name: "Meadow",        sex: "F", peakDecade: 2020 },
+  { rank:  287, name: "Gia",           sex: "F", peakDecade: 2010 },
+  { rank:  288, name: "Milani",        sex: "F", peakDecade: 2020 },
+  { rank:  289, name: "Adelaide",      sex: "F", peakDecade: 2010 },
+  { rank:  290, name: "Aurelia",       sex: "F", peakDecade: 2020 },
+  { rank:  291, name: "Sawyer",        sex: "F", peakDecade: 2010 },
+  { rank:  292, name: "Poppy",         sex: "F", peakDecade: 2020 },
+  { rank:  293, name: "Aylani",        sex: "F", peakDecade: 2020 },
+  { rank:  294, name: "Maggie",        sex: "F", peakDecade: 2000 },
+  { rank:  295, name: "Blake",         sex: "F", peakDecade: 2020 },
+  { rank:  296, name: "Dakota",        sex: "F", peakDecade: 2000 },
+  { rank:  297, name: "Leia",          sex: "F", peakDecade: 2010 },
+  { rank:  298, name: "Esme",          sex: "F", peakDecade: 2020 },
+  { rank:  299, name: "Elowyn",        sex: "F", peakDecade: 2020 },
+  { rank:  300, name: "Sylvia",        sex: "F", peakDecade: 1950 },
+  { rank:  301, name: "Evelynn",       sex: "F", peakDecade: 2010 },
+  { rank:  302, name: "Daniela",       sex: "F", peakDecade: 2000 },
+  { rank:  303, name: "Kimberly",      sex: "F", peakDecade: 1960 },
+  { rank:  304, name: "Adelina",       sex: "F", peakDecade: 2010 },
+  { rank:  305, name: "Elaine",        sex: "F", peakDecade: 1940 },
+  { rank:  306, name: "Joanna",        sex: "F", peakDecade: 1980 },
+  { rank:  307, name: "Francesca",     sex: "F", peakDecade: 2000 },
+  { rank:  308, name: "Octavia",       sex: "F", peakDecade: 2020 },
+  { rank:  309, name: "Harlow",        sex: "F", peakDecade: 2020 },
+  { rank:  310, name: "Elodie",        sex: "F", peakDecade: 2020 },
+  { rank:  311, name: "Tessa",         sex: "F", peakDecade: 2010 },
+  { rank:  312, name: "Morgan",        sex: "F", peakDecade: 1990 },
+  { rank:  313, name: "Brooke",        sex: "F", peakDecade: 1990 },
+  { rank:  314, name: "Catherine",     sex: "F", peakDecade: 1950 },
+  { rank:  315, name: "Amina",         sex: "F", peakDecade: 2010 },
+  { rank:  316, name: "Colette",       sex: "F", peakDecade: 2010 },
+  { rank:  317, name: "Gabriela",      sex: "F", peakDecade: 2000 },
+  { rank:  318, name: "Frances",       sex: "F", peakDecade: 1920 },
+  { rank:  319, name: "Madisson",      sex: "F", peakDecade: 2020 },
+  { rank:  320, name: "Samara",        sex: "F", peakDecade: 2010 },
+  { rank:  321, name: "Sabrina",       sex: "F", peakDecade: 1990 },
+  { rank:  322, name: "Marley",        sex: "F", peakDecade: 2010 },
+  { rank:  323, name: "Kali",          sex: "F", peakDecade: 2010 },
+  { rank:  324, name: "Nina",          sex: "F", peakDecade: 1980 },
+  { rank:  325, name: "Serena",        sex: "F", peakDecade: 2000 },
+  { rank:  326, name: "Alessia",       sex: "F", peakDecade: 2020 },
+  { rank:  327, name: "Navy",          sex: "F", peakDecade: 2020 },
+  { rank:  328, name: "Kendall",       sex: "F", peakDecade: 2000 },
+  { rank:  329, name: "Zuri",          sex: "F", peakDecade: 2020 },
+  { rank:  330, name: "Fatima",        sex: "F", peakDecade: 2000 },
+  { rank:  331, name: "Viviana",       sex: "F", peakDecade: 2010 },
+  { rank:  332, name: "Alayna",        sex: "F", peakDecade: 2010 },
+  { rank:  333, name: "Lorelai",       sex: "F", peakDecade: 2010 },
+  { rank:  334, name: "Hattie",        sex: "F", peakDecade: 1910 },
+  { rank:  335, name: "Mira",          sex: "F", peakDecade: 2010 },
+  { rank:  336, name: "Anaya",         sex: "F", peakDecade: 2010 },
+  { rank:  337, name: "Aisha",         sex: "F", peakDecade: 2010 },
+  { rank:  338, name: "Miley",         sex: "F", peakDecade: 2010 },
+  { rank:  339, name: "Emory",         sex: "F", peakDecade: 2020 },
+  { rank:  340, name: "Heidi",         sex: "F", peakDecade: 1970 },
+  { rank:  341, name: "Teagan",        sex: "F", peakDecade: 2010 },
+  { rank:  342, name: "Leighton",      sex: "F", peakDecade: 2010 },
+  { rank:  343, name: "Annabelle",     sex: "F", peakDecade: 2010 },
+  { rank:  344, name: "Ryleigh",       sex: "F", peakDecade: 2010 },
+  { rank:  345, name: "Aylin",         sex: "F", peakDecade: 2010 },
+  { rank:  346, name: "Paige",         sex: "F", peakDecade: 1990 },
+  { rank:  347, name: "Angelina",      sex: "F", peakDecade: 2000 },
+  { rank:  348, name: "Sydney",        sex: "F", peakDecade: 2000 },
+  { rank:  349, name: "Malia",         sex: "F", peakDecade: 2010 },
+  { rank:  350, name: "Rebecca",       sex: "F", peakDecade: 1970 },
+  { rank:  351, name: "Maryam",        sex: "F", peakDecade: 2010 },
+  { rank:  352, name: "Hope",          sex: "F", peakDecade: 2000 },
+  { rank:  353, name: "Thea",          sex: "F", peakDecade: 2010 },
+  { rank:  354, name: "Elora",         sex: "F", peakDecade: 2020 },
+  { rank:  355, name: "Adelyn",        sex: "F", peakDecade: 2010 },
+  { rank:  356, name: "Ariel",         sex: "F", peakDecade: 1990 },
+  { rank:  357, name: "Kamila",        sex: "F", peakDecade: 2010 },
+  { rank:  358, name: "Wrenlee",       sex: "F", peakDecade: 2020 },
+  { rank:  359, name: "Itzel",         sex: "F", peakDecade: 2000 },
+  { rank:  360, name: "Gwendolyn",     sex: "F", peakDecade: 1950 },
+  { rank:  361, name: "Camilla",       sex: "F", peakDecade: 2010 },
+  { rank:  362, name: "Briella",       sex: "F", peakDecade: 2010 },
+  { rank:  363, name: "Helena",        sex: "F", peakDecade: 2010 },
+  { rank:  364, name: "Kayla",         sex: "F", peakDecade: 1990 },
+  { rank:  365, name: "Matilda",       sex: "F", peakDecade: 1910 },
+  { rank:  366, name: "Adriana",       sex: "F", peakDecade: 2000 },
+  { rank:  367, name: "Ariyah",        sex: "F", peakDecade: 2020 },
+  { rank:  368, name: "Alaya",         sex: "F", peakDecade: 2020 },
+  { rank:  369, name: "Raya",          sex: "F", peakDecade: 2020 },
+  { rank:  370, name: "Adhara",        sex: "F", peakDecade: 2020 },
+  { rank:  371, name: "Jordyn",        sex: "F", peakDecade: 2010 },
+  { rank:  372, name: "Mallory",       sex: "F", peakDecade: 1990 },
+  { rank:  373, name: "Esmeralda",     sex: "F", peakDecade: 2000 },
+  { rank:  374, name: "Malani",        sex: "F", peakDecade: 2020 },
+  { rank:  375, name: "Anya",          sex: "F", peakDecade: 2000 },
+  { rank:  376, name: "Astrid",        sex: "F", peakDecade: 2020 },
+  { rank:  377, name: "Vanessa",       sex: "F", peakDecade: 1980 },
+  { rank:  378, name: "Ivory",         sex: "F", peakDecade: 2020 },
+  { rank:  379, name: "Laura",         sex: "F", peakDecade: 1960 },
+  { rank:  380, name: "Amari",         sex: "F", peakDecade: 2010 },
+  { rank:  381, name: "Demi",          sex: "F", peakDecade: 2010 },
+  { rank:  382, name: "Giselle",       sex: "F", peakDecade: 2000 },
+  { rank:  383, name: "Nicole",        sex: "F", peakDecade: 1980 },
+  { rank:  384, name: "Blaire",        sex: "F", peakDecade: 2020 },
+  { rank:  385, name: "Kira",          sex: "F", peakDecade: 2000 },
+  { rank:  386, name: "Liana",         sex: "F", peakDecade: 2010 },
+  { rank:  387, name: "Kalani",        sex: "F", peakDecade: 2020 },
+  { rank:  388, name: "Londyn",        sex: "F", peakDecade: 2010 },
+  { rank:  389, name: "Carmen",        sex: "F", peakDecade: 1960 },
+  { rank:  390, name: "Sunny",         sex: "F", peakDecade: 2020 },
+  { rank:  391, name: "Florence",      sex: "F", peakDecade: 1920 },
+  { rank:  392, name: "Kaliyah",       sex: "F", peakDecade: 2010 },
+  { rank:  393, name: "Jocelyn",       sex: "F", peakDecade: 2000 },
+  { rank:  394, name: "Danna",         sex: "F", peakDecade: 2010 },
+  { rank:  395, name: "Regina",        sex: "F", peakDecade: 1960 },
+  { rank:  396, name: "Bonnie",        sex: "F", peakDecade: 1940 },
+  { rank:  397, name: "Murphy",        sex: "F", peakDecade: 2020 },
+  { rank:  398, name: "Julianna",      sex: "F", peakDecade: 2000 },
+  { rank:  399, name: "Melany",        sex: "F", peakDecade: 2010 },
+  { rank:  400, name: "Briar",         sex: "F", peakDecade: 2020 },
+  { rank:  401, name: "Lauren",        sex: "F", peakDecade: 1990 },
+  { rank:  402, name: "Logan",         sex: "F", peakDecade: 1990 },
+  { rank:  403, name: "Taylor",        sex: "F", peakDecade: 1990 },
+  { rank:  404, name: "Raven",         sex: "F", peakDecade: 1990 },
+  { rank:  405, name: "Carolina",      sex: "F", peakDecade: 2000 },
+  { rank:  406, name: "Lana",          sex: "F", peakDecade: 1940 },
+  { rank:  407, name: "Brynn",         sex: "F", peakDecade: 2010 },
+  { rank:  408, name: "Angela",        sex: "F", peakDecade: 1970 },
+  { rank:  409, name: "Annalise",      sex: "F", peakDecade: 2010 },
+  { rank:  410, name: "Mckenna",       sex: "F", peakDecade: 2000 },
+  { rank:  411, name: "Journey",       sex: "F", peakDecade: 2010 },
+  { rank:  412, name: "Alayah",        sex: "F", peakDecade: 2010 },
+  { rank:  413, name: "Laila",         sex: "F", peakDecade: 2010 },
+  { rank:  414, name: "Nalani",        sex: "F", peakDecade: 2020 },
+  { rank:  415, name: "Finley",        sex: "F", peakDecade: 2010 },
+  { rank:  416, name: "Holly",         sex: "F", peakDecade: 1970 },
+  { rank:  417, name: "Charlee",       sex: "F", peakDecade: 2010 },
+  { rank:  418, name: "Harley",        sex: "F", peakDecade: 2010 },
+  { rank:  419, name: "Joy",           sex: "F", peakDecade: 1950 },
+  { rank:  420, name: "Melissa",       sex: "F", peakDecade: 1970 },
+  { rank:  421, name: "Dorothy",       sex: "F", peakDecade: 1920 },
+  { rank:  422, name: "Willa",         sex: "F", peakDecade: 2010 },
+  { rank:  423, name: "Opal",          sex: "F", peakDecade: 1920 },
+  { rank:  424, name: "Marceline",     sex: "F", peakDecade: 2020 },
+  { rank:  425, name: "Sarai",         sex: "F", peakDecade: 2010 },
+  { rank:  426, name: "Winter",        sex: "F", peakDecade: 2010 },
+  { rank:  427, name: "Veronica",      sex: "F", peakDecade: 1980 },
+  { rank:  428, name: "Trinity",       sex: "F", peakDecade: 2000 },
+  { rank:  429, name: "Leona",         sex: "F", peakDecade: 1920 },
+  { rank:  430, name: "Katalina",      sex: "F", peakDecade: 2020 },
+  { rank:  431, name: "London",        sex: "F", peakDecade: 2010 },
+  { rank:  432, name: "Dream",         sex: "F", peakDecade: 2020 },
+  { rank:  433, name: "Maia",          sex: "F", peakDecade: 2010 },
+  { rank:  434, name: "Vienna",        sex: "F", peakDecade: 2020 },
+  { rank:  435, name: "Lyra",          sex: "F", peakDecade: 2020 },
+  { rank:  436, name: "Salem",         sex: "F", peakDecade: 2020 },
+  { rank:  437, name: "Hayden",        sex: "F", peakDecade: 2010 },
+  { rank:  438, name: "Macie",         sex: "F", peakDecade: 2010 },
+  { rank:  439, name: "Maddison",      sex: "F", peakDecade: 2010 },
+  { rank:  440, name: "Payton",        sex: "F", peakDecade: 2000 },
+  { rank:  441, name: "Lorelei",       sex: "F", peakDecade: 2010 },
+  { rank:  442, name: "Gracelynn",     sex: "F", peakDecade: 2010 },
+  { rank:  443, name: "Alessandra",    sex: "F", peakDecade: 2010 },
+  { rank:  444, name: "Mya",           sex: "F", peakDecade: 2000 },
+  { rank:  445, name: "Emmy",          sex: "F", peakDecade: 2010 },
+  { rank:  446, name: "Lilliana",      sex: "F", peakDecade: 2010 },
+  { rank:  447, name: "Adelynn",       sex: "F", peakDecade: 2010 },
+  { rank:  448, name: "Mariah",        sex: "F", peakDecade: 1990 },
+  { rank:  449, name: "Alma",          sex: "F", peakDecade: 1920 },
+  { rank:  450, name: "Zariah",        sex: "F", peakDecade: 2010 },
+  { rank:  451, name: "Calliope",      sex: "F", peakDecade: 2020 },
+  { rank:  452, name: "Reign",         sex: "F", peakDecade: 2020 },
+  { rank:  453, name: "Alyssa",        sex: "F", peakDecade: 1990 },
+  { rank:  454, name: "Carter",        sex: "F", peakDecade: 2010 },
+  { rank:  455, name: "Madeleine",     sex: "F", peakDecade: 2000 },
+  { rank:  456, name: "Clementine",    sex: "F", peakDecade: 2020 },
+  { rank:  457, name: "Wynter",        sex: "F", peakDecade: 2020 },
+  { rank:  458, name: "Elisa",         sex: "F", peakDecade: 1980 },
+  { rank:  459, name: "Kataleya",      sex: "F", peakDecade: 2020 },
+  { rank:  460, name: "Alicia",        sex: "F", peakDecade: 1980 },
+  { rank:  461, name: "Elle",          sex: "F", peakDecade: 2010 },
+  { rank:  462, name: "Helen",         sex: "F", peakDecade: 1920 },
+  { rank:  463, name: "Xiomara",       sex: "F", peakDecade: 2020 },
+  { rank:  464, name: "Madilyn",       sex: "F", peakDecade: 2010 },
+  { rank:  465, name: "Michelle",      sex: "F", peakDecade: 1970 },
+  { rank:  466, name: "Gracelyn",      sex: "F", peakDecade: 2010 },
+  { rank:  467, name: "Monroe",        sex: "F", peakDecade: 2010 },
+  { rank:  468, name: "Daniella",      sex: "F", peakDecade: 2010 },
+  { rank:  469, name: "Meredith",      sex: "F", peakDecade: 1980 },
+  { rank:  470, name: "Fiona",         sex: "F", peakDecade: 2010 },
+  { rank:  471, name: "Jaylani",       sex: "F", peakDecade: 2020 },
+  { rank:  472, name: "Maren",         sex: "F", peakDecade: 2020 },
+  { rank:  473, name: "Felicity",      sex: "F", peakDecade: 2010 },
+  { rank:  474, name: "Alexandria",    sex: "F", peakDecade: 1990 },
+  { rank:  475, name: "Winnie",        sex: "F", peakDecade: 1920 },
+  { rank:  476, name: "Alison",        sex: "F", peakDecade: 1980 },
+  { rank:  477, name: "Camryn",        sex: "F", peakDecade: 2000 },
+  { rank:  478, name: "Rylie",         sex: "F", peakDecade: 2010 },
+  { rank:  479, name: "Haisley",       sex: "F", peakDecade: 2020 },
+  { rank:  480, name: "Saige",         sex: "F", peakDecade: 2010 },
+  { rank:  481, name: "Renata",        sex: "F", peakDecade: 2010 },
+  { rank:  482, name: "Anahi",         sex: "F", peakDecade: 2000 },
+  { rank:  483, name: "Ainsley",       sex: "F", peakDecade: 2010 },
+  { rank:  484, name: "Alivia",        sex: "F", peakDecade: 2010 },
+  { rank:  485, name: "Aniyah",        sex: "F", peakDecade: 2010 },
+  { rank:  486, name: "Arielle",       sex: "F", peakDecade: 2010 },
+  { rank:  487, name: "Cameron",       sex: "F", peakDecade: 2000 },
+  { rank:  488, name: "Brooklynn",     sex: "F", peakDecade: 2010 },
+  { rank:  489, name: "Aubree",        sex: "F", peakDecade: 2010 },
+  { rank:  490, name: "Amirah",        sex: "F", peakDecade: 2010 },
+  { rank:  491, name: "Kora",          sex: "F", peakDecade: 2010 },
+  { rank:  492, name: "Miracle",       sex: "F", peakDecade: 2010 },
+  { rank:  493, name: "Amanda",        sex: "F", peakDecade: 1980 },
+  { rank:  494, name: "Arlette",       sex: "F", peakDecade: 2020 },
+  { rank:  495, name: "Solana",        sex: "F", peakDecade: 2020 },
+  { rank:  496, name: "Charli",        sex: "F", peakDecade: 2010 },
+  { rank:  497, name: "Maxine",        sex: "F", peakDecade: 1920 },
+  { rank:  498, name: "Lakelynn",      sex: "F", peakDecade: 2020 },
+  { rank:  499, name: "Edith",         sex: "F", peakDecade: 1920 },
+  { rank:  500, name: "Bianca",        sex: "F", peakDecade: 1990 },
+  { rank:  501, name: "Mae",           sex: "F", peakDecade: 1920 },
+  { rank:  502, name: "Raelyn",        sex: "F", peakDecade: 2010 },
+  { rank:  503, name: "Emely",         sex: "F", peakDecade: 2000 },
+  { rank:  504, name: "Nylah",         sex: "F", peakDecade: 2010 },
+  { rank:  505, name: "Mariam",        sex: "F", peakDecade: 2010 },
+  { rank:  506, name: "Raegan",        sex: "F", peakDecade: 2010 },
+  { rank:  507, name: "Yara",          sex: "F", peakDecade: 2020 },
+  { rank:  508, name: "Beatrice",      sex: "F", peakDecade: 1920 },
+  { rank:  509, name: "Estella",       sex: "F", peakDecade: 1920 },
+  { rank:  510, name: "Scarlet",       sex: "F", peakDecade: 2010 },
+  { rank:  511, name: "Alisson",       sex: "F", peakDecade: 2010 },
+  { rank:  512, name: "Hanna",         sex: "F", peakDecade: 2000 },
+  { rank:  513, name: "Remington",     sex: "F", peakDecade: 2010 },
+  { rank:  514, name: "Analeia",       sex: "F", peakDecade: 2020 },
+  { rank:  515, name: "Faye",          sex: "F", peakDecade: 1940 },
+  { rank:  516, name: "Louise",        sex: "F", peakDecade: 1920 },
+  { rank:  517, name: "Clover",        sex: "F", peakDecade: 2020 },
+  { rank:  518, name: "Jream",         sex: "F", peakDecade: 2020 },
+  { rank:  519, name: "Eve",           sex: "F", peakDecade: 2010 },
+  { rank:  520, name: "Amber",         sex: "F", peakDecade: 1980 },
+  { rank:  521, name: "Jovie",         sex: "F", peakDecade: 2020 },
+  { rank:  522, name: "Kate",          sex: "F", peakDecade: 2000 },
+  { rank:  523, name: "Marlowe",       sex: "F", peakDecade: 2020 },
+  { rank:  524, name: "Madelynn",      sex: "F", peakDecade: 2010 },
+  { rank:  525, name: "Iyla",          sex: "F", peakDecade: 2020 },
+  { rank:  526, name: "Virginia",      sex: "F", peakDecade: 1920 },
+  { rank:  527, name: "Amoura",        sex: "F", peakDecade: 2020 },
+  { rank:  528, name: "Lottie",        sex: "F", peakDecade: 1910 },
+  { rank:  529, name: "Cecelia",       sex: "F", peakDecade: 1940 },
+  { rank:  530, name: "Jayla",         sex: "F", peakDecade: 2000 },
+  { rank:  531, name: "Romina",        sex: "F", peakDecade: 2020 },
+  { rank:  532, name: "Skye",          sex: "F", peakDecade: 2010 },
+  { rank:  533, name: "Nellie",        sex: "F", peakDecade: 1910 },
+  { rank:  534, name: "Phoenix",       sex: "F", peakDecade: 2010 },
+  { rank:  535, name: "Oaklee",        sex: "F", peakDecade: 2020 },
+  { rank:  536, name: "Marlee",        sex: "F", peakDecade: 2010 },
+  { rank:  537, name: "Jazlyn",        sex: "F", peakDecade: 2010 },
+  { rank:  538, name: "Daleyza",       sex: "F", peakDecade: 2010 },
+  { rank:  539, name: "Lenora",        sex: "F", peakDecade: 1920 },
+  { rank:  540, name: "Zahra",         sex: "F", peakDecade: 2010 },
+  { rank:  541, name: "Cassidy",       sex: "F", peakDecade: 2000 },
+  { rank:  542, name: "April",         sex: "F", peakDecade: 1970 },
+  { rank:  543, name: "Heaven",        sex: "F", peakDecade: 2000 },
+  { rank:  544, name: "Priscilla",     sex: "F", peakDecade: 1940 },
+  { rank:  545, name: "Everlee",       sex: "F", peakDecade: 2020 },
+  { rank:  546, name: "Angel",         sex: "F", peakDecade: 2000 },
+  { rank:  547, name: "Capri",         sex: "F", peakDecade: 2020 },
+  { rank:  548, name: "Kyomi",         sex: "F", peakDecade: 2020 },
+  { rank:  549, name: "Danielle",      sex: "F", peakDecade: 1980 },
+  { rank:  550, name: "Holland",       sex: "F", peakDecade: 2020 },
+  { rank:  551, name: "Fernanda",      sex: "F", peakDecade: 2010 },
+  { rank:  552, name: "Frankie",       sex: "F", peakDecade: 1930 },
+  { rank:  553, name: "Emerie",        sex: "F", peakDecade: 2020 },
+  { rank:  554, name: "Alexis",        sex: "F", peakDecade: 1990 },
+  { rank:  555, name: "Amaia",         sex: "F", peakDecade: 2020 },
+  { rank:  556, name: "Kamryn",        sex: "F", peakDecade: 2000 },
+  { rank:  557, name: "Stephanie",     sex: "F", peakDecade: 1980 },
+  { rank:  558, name: "Jacqueline",    sex: "F", peakDecade: 1960 },
+  { rank:  559, name: "Margo",         sex: "F", peakDecade: 1950 },
+  { rank:  560, name: "Lilian",        sex: "F", peakDecade: 2010 },
+  { rank:  561, name: "Mavis",         sex: "F", peakDecade: 1920 },
+  { rank:  562, name: "Armani",        sex: "F", peakDecade: 2010 },
+  { rank:  563, name: "Della",         sex: "F", peakDecade: 1920 },
+  { rank:  564, name: "Izabella",      sex: "F", peakDecade: 2010 },
+  { rank:  565, name: "Nadia",         sex: "F", peakDecade: 2000 },
+  { rank:  566, name: "Amalia",        sex: "F", peakDecade: 2010 },
+  { rank:  567, name: "Ivanna",        sex: "F", peakDecade: 2010 },
+  { rank:  568, name: "Makayla",       sex: "F", peakDecade: 2000 },
+  { rank:  569, name: "Allie",         sex: "F", peakDecade: 2010 },
+  { rank:  570, name: "Hadassah",      sex: "F", peakDecade: 2010 },
+  { rank:  571, name: "Miller",        sex: "F", peakDecade: 2020 },
+  { rank:  572, name: "Lina",          sex: "F", peakDecade: 2010 },
+  { rank:  573, name: "Estelle",       sex: "F", peakDecade: 1910 },
+  { rank:  574, name: "Cali",          sex: "F", peakDecade: 2010 },
+  { rank:  575, name: "Sevyn",         sex: "F", peakDecade: 2020 },
+  { rank:  576, name: "Mckenzie",      sex: "F", peakDecade: 2000 },
+  { rank:  577, name: "Cleo",          sex: "F", peakDecade: 1920 },
+  { rank:  578, name: "Jimena",        sex: "F", peakDecade: 2010 },
+  { rank:  579, name: "Imani",         sex: "F", peakDecade: 2000 },
+  { rank:  580, name: "Kyla",          sex: "F", peakDecade: 2000 },
+  { rank:  581, name: "Kailany",       sex: "F", peakDecade: 2020 },
+  { rank:  582, name: "Reina",         sex: "F", peakDecade: 2010 },
+  { rank:  583, name: "Noemi",         sex: "F", peakDecade: 2000 },
+  { rank:  584, name: "Jordan",        sex: "F", peakDecade: 1990 },
+  { rank:  585, name: "Lylah",         sex: "F", peakDecade: 2010 },
+  { rank:  586, name: "Jennifer",      sex: "F", peakDecade: 1970 },
+  { rank:  587, name: "Alia",          sex: "F", peakDecade: 2010 },
+  { rank:  588, name: "Chaya",         sex: "F", peakDecade: 2010 },
+  { rank:  589, name: "Mara",          sex: "F", peakDecade: 2000 },
+  { rank:  590, name: "Marigold",      sex: "F", peakDecade: 2020 },
+  { rank:  591, name: "Meilani",       sex: "F", peakDecade: 2020 },
+  { rank:  592, name: "Paris",         sex: "F", peakDecade: 2010 },
+  { rank:  593, name: "Makenna",       sex: "F", peakDecade: 2000 },
+  { rank:  594, name: "Reyna",         sex: "F", peakDecade: 2000 },
+  { rank:  595, name: "Avianna",       sex: "F", peakDecade: 2010 },
+  { rank:  596, name: "Halle",         sex: "F", peakDecade: 2000 },
+  { rank:  597, name: "Mina",          sex: "F", peakDecade: 2010 },
+  { rank:  598, name: "Tiana",         sex: "F", peakDecade: 1990 },
+  { rank:  599, name: "Elliott",       sex: "F", peakDecade: 2010 },
+  { rank:  600, name: "Seraphina",     sex: "F", peakDecade: 2010 },
+  { rank:  601, name: "Emelia",        sex: "F", peakDecade: 2010 },
+  { rank:  602, name: "Marina",        sex: "F", peakDecade: 1990 },
+  { rank:  603, name: "Aliana",        sex: "F", peakDecade: 2010 },
+  { rank:  604, name: "Alejandra",     sex: "F", peakDecade: 1990 },
+  { rank:  605, name: "Mylah",         sex: "F", peakDecade: 2020 },
+  { rank:  606, name: "Loretta",       sex: "F", peakDecade: 1930 },
+  { rank:  607, name: "Flora",         sex: "F", peakDecade: 1920 },
+  { rank:  608, name: "Brinley",       sex: "F", peakDecade: 2010 },
+  { rank:  609, name: "Rosalia",       sex: "F", peakDecade: 2020 },
+  { rank:  610, name: "Siena",         sex: "F", peakDecade: 2010 },
+  { rank:  611, name: "Leyla",         sex: "F", peakDecade: 2010 },
+  { rank:  612, name: "Estrella",      sex: "F", peakDecade: 2000 },
+  { rank:  613, name: "Halo",          sex: "F", peakDecade: 2020 },
+  { rank:  614, name: "Ari",           sex: "F", peakDecade: 2020 },
+  { rank:  615, name: "Ariya",         sex: "F", peakDecade: 2010 },
+  { rank:  616, name: "Sierra",        sex: "F", peakDecade: 1990 },
+  { rank:  617, name: "Campbell",      sex: "F", peakDecade: 2000 },
+  { rank:  618, name: "Marie",         sex: "F", peakDecade: 1920 },
+  { rank:  619, name: "Anne",          sex: "F", peakDecade: 1950 },
+  { rank:  620, name: "Amiyah",        sex: "F", peakDecade: 2010 },
+  { rank:  621, name: "Goldie",        sex: "F", peakDecade: 1910 },
+  { rank:  622, name: "Keira",         sex: "F", peakDecade: 2000 },
+  { rank:  623, name: "Selene",        sex: "F", peakDecade: 2020 },
+  { rank:  624, name: "Noah",          sex: "F", peakDecade: 2020 },
+  { rank:  625, name: "Sariyah",       sex: "F", peakDecade: 2010 },
+  { rank:  626, name: "Maliyah",       sex: "F", peakDecade: 2010 },
+  { rank:  627, name: "Winona",        sex: "F", peakDecade: 1920 },
+  { rank:  628, name: "Lexi",          sex: "F", peakDecade: 2010 },
+  { rank:  629, name: "Rivka",         sex: "F", peakDecade: 2010 },
+  { rank:  630, name: "Azariah",       sex: "F", peakDecade: 2010 },
+  { rank:  631, name: "Cassandra",     sex: "F", peakDecade: 1990 },
+  { rank:  632, name: "Andi",          sex: "F", peakDecade: 2010 },
+  { rank:  633, name: "Gabrielle",     sex: "F", peakDecade: 1990 },
+  { rank:  634, name: "Indie",         sex: "F", peakDecade: 2020 },
+  { rank:  635, name: "Destiny",       sex: "F", peakDecade: 2000 },
+  { rank:  636, name: "Ariah",         sex: "F", peakDecade: 2010 },
+  { rank:  637, name: "Oaklyn",        sex: "F", peakDecade: 2020 },
+  { rank:  638, name: "Azaria",        sex: "F", peakDecade: 2010 },
+  { rank:  639, name: "Rhea",          sex: "F", peakDecade: 2020 },
+  { rank:  640, name: "Lyric",         sex: "F", peakDecade: 2010 },
+  { rank:  641, name: "Violeta",       sex: "F", peakDecade: 2010 },
+  { rank:  642, name: "Arlet",         sex: "F", peakDecade: 2020 },
+  { rank:  643, name: "Ellianna",      sex: "F", peakDecade: 2020 },
+  { rank:  644, name: "Aya",           sex: "F", peakDecade: 2010 },
+  { rank:  645, name: "Zariyah",       sex: "F", peakDecade: 2010 },
+  { rank:  646, name: "Katie",         sex: "F", peakDecade: 1980 },
+  { rank:  647, name: "Galilea",       sex: "F", peakDecade: 2010 },
+  { rank:  648, name: "Thalia",        sex: "F", peakDecade: 2000 },
+  { rank:  649, name: "Shelby",        sex: "F", peakDecade: 1990 },
+  { rank:  650, name: "Andie",         sex: "F", peakDecade: 2020 },
+  { rank:  651, name: "Irene",         sex: "F", peakDecade: 1920 },
+  { rank:  652, name: "Alara",         sex: "F", peakDecade: 2020 },
+  { rank:  653, name: "Rosa",          sex: "F", peakDecade: 1920 },
+  { rank:  654, name: "Eileen",        sex: "F", peakDecade: 1950 },
+  { rank:  655, name: "Gloria",        sex: "F", peakDecade: 1940 },
+  { rank:  656, name: "Miranda",       sex: "F", peakDecade: 1990 },
+  { rank:  657, name: "Aleena",        sex: "F", peakDecade: 2010 },
+  { rank:  658, name: "Hana",          sex: "F", peakDecade: 2000 },
+  { rank:  659, name: "Noor",          sex: "F", peakDecade: 2010 },
+  { rank:  660, name: "Melina",        sex: "F", peakDecade: 2000 },
+  { rank:  661, name: "Briana",        sex: "F", peakDecade: 1990 },
+  { rank:  662, name: "Legacy",        sex: "F", peakDecade: 2020 },
+  { rank:  663, name: "Myra",          sex: "F", peakDecade: 1950 },
+  { rank:  664, name: "Isabela",       sex: "F", peakDecade: 2000 },
+  { rank:  665, name: "Jessica",       sex: "F", peakDecade: 1980 },
+  { rank:  666, name: "Jolene",        sex: "F", peakDecade: 1970 },
+  { rank:  667, name: "Marisol",       sex: "F", peakDecade: 2000 },
+  { rank:  668, name: "Oakleigh",      sex: "F", peakDecade: 2020 },
+  { rank:  669, name: "Paislee",       sex: "F", peakDecade: 2010 },
+  { rank:  670, name: "Birdie",        sex: "F", peakDecade: 1910 },
+  { rank:  671, name: "Skyler",        sex: "F", peakDecade: 2000 },
+  { rank:  672, name: "Yaretzi",       sex: "F", peakDecade: 2010 },
+  { rank:  673, name: "Lakelyn",       sex: "F", peakDecade: 2020 },
+  { rank:  674, name: "Laney",         sex: "F", peakDecade: 2000 },
+  { rank:  675, name: "Aliza",         sex: "F", peakDecade: 2010 },
+  { rank:  676, name: "Lillie",        sex: "F", peakDecade: 1920 },
+  { rank:  677, name: "Whitley",       sex: "F", peakDecade: 2020 },
+  { rank:  678, name: "Amani",         sex: "F", peakDecade: 2010 },
+  { rank:  679, name: "Jenna",         sex: "F", peakDecade: 1990 },
+  { rank:  680, name: "Alondra",       sex: "F", peakDecade: 2000 },
+  { rank:  681, name: "Rosalina",      sex: "F", peakDecade: 2020 },
+  { rank:  682, name: "Ellis",         sex: "F", peakDecade: 2010 },
+  { rank:  683, name: "Coraline",      sex: "F", peakDecade: 2010 },
+  { rank:  684, name: "Sasha",         sex: "F", peakDecade: 1980 },
+  { rank:  685, name: "Wrenleigh",     sex: "F", peakDecade: 2020 },
+  { rank:  686, name: "Chana",         sex: "F", peakDecade: 2010 },
+  { rank:  687, name: "Dallas",        sex: "F", peakDecade: 2010 },
+  { rank:  688, name: "Emberly",       sex: "F", peakDecade: 2020 },
+  { rank:  689, name: "Georgina",      sex: "F", peakDecade: 1970 },
+  { rank:  690, name: "Khaleesi",      sex: "F", peakDecade: 2010 },
+  { rank:  691, name: "Billie",        sex: "F", peakDecade: 1930 },
+  { rank:  692, name: "Kinley",        sex: "F", peakDecade: 2010 },
+  { rank:  693, name: "Lara",          sex: "F", peakDecade: 1970 },
+  { rank:  694, name: "Baylor",        sex: "F", peakDecade: 2020 },
+  { rank:  695, name: "Emmie",         sex: "F", peakDecade: 2010 },
+  { rank:  696, name: "Leilany",       sex: "F", peakDecade: 2020 },
+  { rank:  697, name: "Louisa",        sex: "F", peakDecade: 2010 },
+  { rank:  698, name: "Romy",          sex: "F", peakDecade: 2020 },
+  { rank:  699, name: "Rowyn",         sex: "F", peakDecade: 2020 },
+  { rank:  700, name: "Makenzie",      sex: "F", peakDecade: 2000 },
+  { rank:  701, name: "Averie",        sex: "F", peakDecade: 2010 },
+  { rank:  702, name: "Nia",           sex: "F", peakDecade: 2000 },
+  { rank:  703, name: "Merritt",       sex: "F", peakDecade: 2020 },
+  { rank:  704, name: "Robin",         sex: "F", peakDecade: 1960 },
+  { rank:  705, name: "Angie",         sex: "F", peakDecade: 1970 },
+  { rank:  706, name: "Drew",          sex: "F", peakDecade: 2000 },
+  { rank:  707, name: "Alena",         sex: "F", peakDecade: 2010 },
+  { rank:  708, name: "Angelica",      sex: "F", peakDecade: 1990 },
+  { rank:  709, name: "Kennedi",       sex: "F", peakDecade: 2010 },
+  { rank:  710, name: "Jazmin",        sex: "F", peakDecade: 2000 },
+  { rank:  711, name: "Analia",        sex: "F", peakDecade: 2010 },
+  { rank:  712, name: "Leslie",        sex: "F", peakDecade: 1960 },
+  { rank:  713, name: "Martha",        sex: "F", peakDecade: 1940 },
+  { rank:  714, name: "Mckinley",      sex: "F", peakDecade: 2010 },
+  { rank:  715, name: "Ryan",          sex: "F", peakDecade: 2010 },
+  { rank:  716, name: "Dayana",        sex: "F", peakDecade: 2010 },
+  { rank:  717, name: "Lennox",        sex: "F", peakDecade: 2020 },
+  { rank:  718, name: "Ila",           sex: "F", peakDecade: 1920 },
+  { rank:  719, name: "Karsyn",        sex: "F", peakDecade: 2010 },
+  { rank:  720, name: "Macy",          sex: "F", peakDecade: 2000 },
+  { rank:  721, name: "Remy",          sex: "F", peakDecade: 2010 },
+  { rank:  722, name: "Sol",           sex: "F", peakDecade: 2020 },
+  { rank:  723, name: "Samira",        sex: "F", peakDecade: 2010 },
+  { rank:  724, name: "Bridget",       sex: "F", peakDecade: 1970 },
+  { rank:  725, name: "Gwen",          sex: "F", peakDecade: 1950 },
+  { rank:  726, name: "Theodora",      sex: "F", peakDecade: 2020 },
+  { rank:  727, name: "Keilani",       sex: "F", peakDecade: 2020 },
+  { rank:  728, name: "Bristol",       sex: "F", peakDecade: 2010 },
+  { rank:  729, name: "Kathryn",       sex: "F", peakDecade: 1950 },
+  { rank:  730, name: "Iliana",        sex: "F", peakDecade: 2000 },
+  { rank:  731, name: "Abby",          sex: "F", peakDecade: 2000 },
+  { rank:  732, name: "Taytum",        sex: "F", peakDecade: 2020 },
+  { rank:  733, name: "Ramona",        sex: "F", peakDecade: 1950 },
+  { rank:  734, name: "Laurel",        sex: "F", peakDecade: 1950 },
+  { rank:  735, name: "Persephone",    sex: "F", peakDecade: 2020 },
+  { rank:  736, name: "Kenzie",        sex: "F", peakDecade: 2010 },
+  { rank:  737, name: "Monica",        sex: "F", peakDecade: 1970 },
+  { rank:  738, name: "Lacey",         sex: "F", peakDecade: 1980 },
+  { rank:  739, name: "Veda",          sex: "F", peakDecade: 2010 },
+  { rank:  740, name: "Penny",         sex: "F", peakDecade: 1960 },
+  { rank:  741, name: "Emerald",       sex: "F", peakDecade: 1990 },
+  { rank:  742, name: "Kensley",       sex: "F", peakDecade: 2010 },
+  { rank:  743, name: "Kiana",         sex: "F", peakDecade: 1990 },
+  { rank:  744, name: "Valery",        sex: "F", peakDecade: 2010 },
+  { rank:  745, name: "Maisy",         sex: "F", peakDecade: 2020 },
+  { rank:  746, name: "Araceli",       sex: "F", peakDecade: 2000 },
+  { rank:  747, name: "Dani",          sex: "F", peakDecade: 2010 },
+  { rank:  748, name: "Mikayla",       sex: "F", peakDecade: 2000 },
+  { rank:  749, name: "Davina",        sex: "F", peakDecade: 2020 },
+  { rank:  750, name: "Karina",        sex: "F", peakDecade: 1990 },
+  { rank:  751, name: "Adele",         sex: "F", peakDecade: 1920 },
+  { rank:  752, name: "Bethany",       sex: "F", peakDecade: 1980 },
+  { rank:  753, name: "Milan",         sex: "F", peakDecade: 2010 },
+  { rank:  754, name: "Amaris",        sex: "F", peakDecade: 2010 },
+  { rank:  755, name: "Rynlee",        sex: "F", peakDecade: 2020 },
+  { rank:  756, name: "Kaeli",         sex: "F", peakDecade: 2020 },
+  { rank:  757, name: "Lettie",        sex: "F", peakDecade: 1920 },
+  { rank:  758, name: "Soleil",        sex: "F", peakDecade: 2020 },
+  { rank:  759, name: "Kenna",         sex: "F", peakDecade: 2010 },
+  { rank:  760, name: "Charley",       sex: "F", peakDecade: 2010 },
+  { rank:  761, name: "Marilyn",       sex: "F", peakDecade: 1940 },
+  { rank:  762, name: "Neriah",        sex: "F", peakDecade: 2010 },
+  { rank:  763, name: "Xyla",          sex: "F", peakDecade: 2020 },
+  { rank:  764, name: "Elina",         sex: "F", peakDecade: 2010 },
+  { rank:  765, name: "Kiyomi",        sex: "F", peakDecade: 2020 },
+  { rank:  766, name: "Azari",         sex: "F", peakDecade: 2020 },
+  { rank:  767, name: "Keziah",        sex: "F", peakDecade: 2010 },
+  { rank:  768, name: "Indy",          sex: "F", peakDecade: 2020 },
+  { rank:  769, name: "Laylani",       sex: "F", peakDecade: 2020 },
+  { rank:  770, name: "Christina",     sex: "F", peakDecade: 1980 },
+  { rank:  771, name: "Dulce",         sex: "F", peakDecade: 2000 },
+  { rank:  772, name: "Freyja",        sex: "F", peakDecade: 2020 },
+  { rank:  773, name: "Maci",          sex: "F", peakDecade: 2010 },
+  { rank:  774, name: "Celia",         sex: "F", peakDecade: 1910 },
+  { rank:  775, name: "Malaya",        sex: "F", peakDecade: 2010 },
+  { rank:  776, name: "Inaya",         sex: "F", peakDecade: 2020 },
+  { rank:  777, name: "Pearl",         sex: "F", peakDecade: 1910 },
+  { rank:  778, name: "Evelina",       sex: "F", peakDecade: 2010 },
+  { rank:  779, name: "Fallon",        sex: "F", peakDecade: 1980 },
+  { rank:  780, name: "Luella",        sex: "F", peakDecade: 1920 },
+  { rank:  781, name: "Ruthie",        sex: "F", peakDecade: 1940 },
+  { rank:  782, name: "Royalty",       sex: "F", peakDecade: 2020 },
+  { rank:  783, name: "Janiyah",       sex: "F", peakDecade: 2010 },
+  { rank:  784, name: "Paulina",       sex: "F", peakDecade: 2000 },
+  { rank:  785, name: "Belen",         sex: "F", peakDecade: 2010 },
+  { rank:  786, name: "Journi",        sex: "F", peakDecade: 2020 },
+  { rank:  787, name: "Ocean",         sex: "F", peakDecade: 2020 },
+  { rank:  788, name: "Elouise",       sex: "F", peakDecade: 1920 },
+  { rank:  789, name: "Emiliana",      sex: "F", peakDecade: 2020 },
+  { rank:  790, name: "Judith",        sex: "F", peakDecade: 1940 },
+  { rank:  791, name: "Klarity",       sex: "F", peakDecade: 2020 },
+  { rank:  792, name: "Alaiya",        sex: "F", peakDecade: 2020 },
+  { rank:  793, name: "Paloma",        sex: "F", peakDecade: 2010 },
+  { rank:  794, name: "Yareli",        sex: "F", peakDecade: 2010 },
+  { rank:  795, name: "Cielo",         sex: "F", peakDecade: 2000 },
+  { rank:  796, name: "Rayna",         sex: "F", peakDecade: 2010 },
+  { rank:  797, name: "Bellamy",       sex: "F", peakDecade: 2020 },
+  { rank:  798, name: "Elowen",        sex: "F", peakDecade: 2020 },
+  { rank:  799, name: "Aileen",        sex: "F", peakDecade: 2000 },
+  { rank:  800, name: "Dalia",         sex: "F", peakDecade: 2000 },
+  { rank:  801, name: "Janelle",       sex: "F", peakDecade: 1980 },
+  { rank:  802, name: "Kaitlyn",       sex: "F", peakDecade: 1990 },
+  { rank:  803, name: "Karla",         sex: "F", peakDecade: 1960 },
+  { rank:  804, name: "Kayleigh",      sex: "F", peakDecade: 2000 },
+  { rank:  805, name: "Adley",         sex: "F", peakDecade: 2010 },
+  { rank:  806, name: "Avani",         sex: "F", peakDecade: 2020 },
+  { rank:  807, name: "Brynleigh",     sex: "F", peakDecade: 2020 },
+  { rank:  808, name: "Dylan",         sex: "F", peakDecade: 2010 },
+  { rank:  809, name: "Treasure",      sex: "F", peakDecade: 2010 },
+  { rank:  810, name: "Zainab",        sex: "F", peakDecade: 2010 },
+  { rank:  811, name: "Charleigh",     sex: "F", peakDecade: 2010 },
+  { rank:  812, name: "Milana",        sex: "F", peakDecade: 2010 },
+  { rank:  813, name: "Naya",          sex: "F", peakDecade: 2010 },
+  { rank:  814, name: "Kelsey",        sex: "F", peakDecade: 1990 },
+  { rank:  815, name: "Quincy",        sex: "F", peakDecade: 2020 },
+  { rank:  816, name: "Jenesis",       sex: "F", peakDecade: 2010 },
+  { rank:  817, name: "Aura",          sex: "F", peakDecade: 2020 },
+  { rank:  818, name: "Romi",          sex: "F", peakDecade: 2020 },
+  { rank:  819, name: "Julietta",      sex: "F", peakDecade: 2020 },
+  { rank:  820, name: "Livia",         sex: "F", peakDecade: 2010 },
+  { rank:  821, name: "Keyla",         sex: "F", peakDecade: 2010 },
+  { rank:  822, name: "Nola",          sex: "F", peakDecade: 2010 },
+  { rank:  823, name: "Aliya",         sex: "F", peakDecade: 2000 },
+  { rank:  824, name: "Jessie",        sex: "F", peakDecade: 1920 },
+  { rank:  825, name: "Nyomi",         sex: "F", peakDecade: 2020 },
+  { rank:  826, name: "Promise",       sex: "F", peakDecade: 2010 },
+  { rank:  827, name: "Aila",          sex: "F", peakDecade: 2020 },
+  { rank:  828, name: "Amelie",        sex: "F", peakDecade: 2010 },
+  { rank:  829, name: "Celina",        sex: "F", peakDecade: 1990 },
+  { rank:  830, name: "Kyra",          sex: "F", peakDecade: 2000 },
+  { rank:  831, name: "Layan",         sex: "F", peakDecade: 2020 },
+  { rank:  832, name: "Zelda",         sex: "F", peakDecade: 2010 },
+  { rank:  833, name: "Erin",          sex: "F", peakDecade: 1980 },
+  { rank:  834, name: "Ezra",          sex: "F", peakDecade: 2020 },
+  { rank:  835, name: "Zaniyah",       sex: "F", peakDecade: 2010 },
+  { rank:  836, name: "Denver",        sex: "F", peakDecade: 2020 },
+  { rank:  837, name: "Braelynn",      sex: "F", peakDecade: 2010 },
+  { rank:  838, name: "Jaliyah",       sex: "F", peakDecade: 2010 },
+  { rank:  839, name: "Luz",           sex: "F", peakDecade: 2000 },
+  { rank:  840, name: "Sloan",         sex: "F", peakDecade: 2010 },
+  { rank:  841, name: "Amayah",        sex: "F", peakDecade: 2010 },
+  { rank:  842, name: "Hunter",        sex: "F", peakDecade: 1990 },
+  { rank:  843, name: "Michaela",      sex: "F", peakDecade: 1990 },
+  { rank:  844, name: "Elani",         sex: "F", peakDecade: 2020 },
+  { rank:  845, name: "Ensley",        sex: "F", peakDecade: 2020 },
+  { rank:  846, name: "Honey",         sex: "F", peakDecade: 2020 },
+  { rank:  847, name: "Tara",          sex: "F", peakDecade: 1970 },
+  { rank:  848, name: "Lea",           sex: "F", peakDecade: 1960 },
+  { rank:  849, name: "Kendra",        sex: "F", peakDecade: 1980 },
+  { rank:  850, name: "Magdalena",     sex: "F", peakDecade: 2000 },
+  { rank:  851, name: "Chelsea",       sex: "F", peakDecade: 1990 },
+  { rank:  852, name: "Kelly",         sex: "F", peakDecade: 1970 },
+  { rank:  853, name: "Anaiah",        sex: "F", peakDecade: 2010 },
+  { rank:  854, name: "Indigo",        sex: "F", peakDecade: 2020 },
+  { rank:  855, name: "Paula",         sex: "F", peakDecade: 1950 },
+  { rank:  856, name: "Nala",          sex: "F", peakDecade: 2010 },
+  { rank:  857, name: "Darcy",         sex: "F", peakDecade: 1960 },
+  { rank:  858, name: "Jamie",         sex: "F", peakDecade: 1980 },
+  { rank:  859, name: "Lilia",         sex: "F", peakDecade: 2010 },
+  { rank:  860, name: "Madilynn",      sex: "F", peakDecade: 2010 },
+  { rank:  861, name: "Haley",         sex: "F", peakDecade: 1990 },
+  { rank:  862, name: "Arisbeth",      sex: "F", peakDecade: 2020 },
+  { rank:  863, name: "Ayleen",        sex: "F", peakDecade: 2010 },
+  { rank:  864, name: "Deborah",       sex: "F", peakDecade: 1950 },
+  { rank:  865, name: "Eleanora",      sex: "F", peakDecade: 2020 },
+  { rank:  866, name: "Jemma",         sex: "F", peakDecade: 2010 },
+  { rank:  867, name: "Mercy",         sex: "F", peakDecade: 2010 },
+  { rank:  868, name: "Soraya",        sex: "F", peakDecade: 2010 },
+  { rank:  869, name: "Aspyn",         sex: "F", peakDecade: 2020 },
+  { rank:  870, name: "Ayah",          sex: "F", peakDecade: 2020 },
+  { rank:  871, name: "Johanna",       sex: "F", peakDecade: 1980 },
+  { rank:  872, name: "Adrianna",      sex: "F", peakDecade: 2000 },
+  { rank:  873, name: "Julie",         sex: "F", peakDecade: 1960 },
+  { rank:  874, name: "Marianna",      sex: "F", peakDecade: 2000 },
+  { rank:  875, name: "Kahlani",       sex: "F", peakDecade: 2020 },
+  { rank:  876, name: "Kylee",         sex: "F", peakDecade: 2000 },
+  { rank:  877, name: "Lyanna",        sex: "F", peakDecade: 2020 },
+  { rank:  878, name: "Giovanna",      sex: "F", peakDecade: 2000 },
+  { rank:  879, name: "Siya",          sex: "F", peakDecade: 2020 },
+  { rank:  880, name: "Tiffany",       sex: "F", peakDecade: 1980 },
+  { rank:  881, name: "Colbie",        sex: "F", peakDecade: 2010 },
+  { rank:  882, name: "Emi",           sex: "F", peakDecade: 2010 },
+  { rank:  883, name: "Odette",        sex: "F", peakDecade: 2020 },
+  { rank:  884, name: "Rebekah",       sex: "F", peakDecade: 1990 },
+  { rank:  885, name: "Tilly",         sex: "F", peakDecade: 2020 },
+  { rank:  886, name: "Vada",          sex: "F", peakDecade: 2010 },
+  { rank:  887, name: "Aviana",        sex: "F", peakDecade: 2010 },
+  { rank:  888, name: "Berkley",       sex: "F", peakDecade: 2010 },
+  { rank:  889, name: "Megan",         sex: "F", peakDecade: 1990 },
+  { rank:  890, name: "Leanna",        sex: "F", peakDecade: 1990 },
+  { rank:  891, name: "Lilianna",      sex: "F", peakDecade: 2010 },
+  { rank:  892, name: "Anais",         sex: "F", peakDecade: 2010 },
+  { rank:  893, name: "Mariel",        sex: "F", peakDecade: 1990 },
+  { rank:  894, name: "Violette",      sex: "F", peakDecade: 2010 },
+  { rank:  895, name: "Chandler",      sex: "F", peakDecade: 1990 },
+  { rank:  896, name: "Liv",           sex: "F", peakDecade: 2010 },
+  { rank:  897, name: "Naylani",       sex: "F", peakDecade: 2020 },
+  { rank:  898, name: "Ainara",        sex: "F", peakDecade: 2020 },
+  { rank:  899, name: "Guinevere",     sex: "F", peakDecade: 2020 },
+  { rank:  900, name: "Liora",         sex: "F", peakDecade: 2020 },
+  { rank:  901, name: "Maizie",        sex: "F", peakDecade: 2020 },
+  { rank:  902, name: "Linda",         sex: "F", peakDecade: 1950 },
+  { rank:  903, name: "Luisa",         sex: "F", peakDecade: 2000 },
+  { rank:  904, name: "Khalani",       sex: "F", peakDecade: 2020 },
+  { rank:  905, name: "Kollyns",       sex: "F", peakDecade: 2020 },
+  { rank:  906, name: "Rayne",         sex: "F", peakDecade: 2010 },
+  { rank:  907, name: "Nataly",        sex: "F", peakDecade: 2000 },
+  { rank:  908, name: "Greta",         sex: "F", peakDecade: 2010 },
+  { rank:  909, name: "Micah",         sex: "F", peakDecade: 2000 },
+  { rank:  910, name: "Stormi",        sex: "F", peakDecade: 2020 },
+  { rank:  911, name: "Teresa",        sex: "F", peakDecade: 1960 },
+  { rank:  912, name: "Bennett",       sex: "F", peakDecade: 2020 },
+  { rank:  913, name: "Anayah",        sex: "F", peakDecade: 2010 },
+  { rank:  914, name: "Eliora",        sex: "F", peakDecade: 2020 },
+  { rank:  915, name: "Giuliana",      sex: "F", peakDecade: 2010 },
+  { rank:  916, name: "Raina",         sex: "F", peakDecade: 2010 },
+  { rank:  917, name: "Sarahi",        sex: "F", peakDecade: 2000 },
+  { rank:  918, name: "Elyse",         sex: "F", peakDecade: 2010 },
+  { rank:  919, name: "Zaylee",        sex: "F", peakDecade: 2010 },
+  { rank:  920, name: "Cheyenne",      sex: "F", peakDecade: 1990 },
+  { rank:  921, name: "Giana",         sex: "F", peakDecade: 2010 },
+  { rank:  922, name: "Emmeline",      sex: "F", peakDecade: 2010 },
+  { rank:  923, name: "Winifred",      sex: "F", peakDecade: 1920 },
+  { rank:  924, name: "Clare",         sex: "F", peakDecade: 2000 },
+  { rank:  925, name: "Elisabeth",     sex: "F", peakDecade: 1990 },
+  { rank:  926, name: "Ivey",          sex: "F", peakDecade: 2020 },
+  { rank:  927, name: "Maddie",        sex: "F", peakDecade: 2010 },
+  { rank:  928, name: "Brittany",      sex: "F", peakDecade: 1990 },
+  { rank:  929, name: "Emberlynn",     sex: "F", peakDecade: 2020 },
+  { rank:  930, name: "Etta",          sex: "F", peakDecade: 1920 },
+  { rank:  931, name: "Hadlee",        sex: "F", peakDecade: 2010 },
+  { rank:  932, name: "Ailanny",       sex: "F", peakDecade: 2020 },
+  { rank:  933, name: "Aleia",         sex: "F", peakDecade: 2020 },
+  { rank:  934, name: "Kallie",        sex: "F", peakDecade: 2010 },
+  { rank:  935, name: "Landry",        sex: "F", peakDecade: 2010 },
+  { rank:  936, name: "Kimber",        sex: "F", peakDecade: 2010 },
+  { rank:  937, name: "Salma",         sex: "F", peakDecade: 2000 },
+  { rank:  938, name: "Alianna",       sex: "F", peakDecade: 2010 },
+  { rank:  939, name: "Ayra",          sex: "F", peakDecade: 2020 },
+  { rank:  940, name: "Tallulah",      sex: "F", peakDecade: 2020 },
+  { rank:  941, name: "Darla",         sex: "F", peakDecade: 1960 },
+  { rank:  942, name: "Elara",         sex: "F", peakDecade: 2020 },
+  { rank:  943, name: "Mariella",      sex: "F", peakDecade: 2010 },
+  { rank:  944, name: "Saanvi",        sex: "F", peakDecade: 2010 },
+  { rank:  945, name: "Zaria",         sex: "F", peakDecade: 2000 },
+  { rank:  946, name: "Madalyn",       sex: "F", peakDecade: 2000 },
+  { rank:  947, name: "Sunday",        sex: "F", peakDecade: 2020 },
+  { rank:  948, name: "Marcella",      sex: "F", peakDecade: 1920 },
+  { rank:  949, name: "Sky",           sex: "F", peakDecade: 2010 },
+  { rank:  950, name: "Milena",        sex: "F", peakDecade: 2010 },
+  { rank:  951, name: "Sariah",        sex: "F", peakDecade: 2010 },
+  { rank:  952, name: "Yuna",          sex: "F", peakDecade: 2020 },
+  { rank:  953, name: "Zyla",          sex: "F", peakDecade: 2020 },
+  { rank:  954, name: "Rosalee",       sex: "F", peakDecade: 2010 },
+  { rank:  955, name: "Anika",         sex: "F", peakDecade: 2000 },
+  { rank:  956, name: "Kinslee",       sex: "F", peakDecade: 2010 },
+  { rank:  957, name: "Love",          sex: "F", peakDecade: 2020 },
+  { rank:  958, name: "Malaysia",      sex: "F", peakDecade: 2010 },
+  { rank:  959, name: "Yasmin",        sex: "F", peakDecade: 2000 },
+  { rank:  960, name: "Aadhya",        sex: "F", peakDecade: 2010 },
+  { rank:  961, name: "Ainhoa",        sex: "F", peakDecade: 2020 },
+  { rank:  962, name: "August",        sex: "F", peakDecade: 2010 },
+  { rank:  963, name: "Bexley",        sex: "F", peakDecade: 2020 },
+  { rank:  964, name: "Amiri",         sex: "F", peakDecade: 2020 },
+  { rank:  965, name: "Aleah",         sex: "F", peakDecade: 2010 },
+  { rank:  966, name: "Mazie",         sex: "F", peakDecade: 1920 },
+  { rank:  967, name: "Nancy",         sex: "F", peakDecade: 1950 },
+  { rank:  968, name: "Barbara",       sex: "F", peakDecade: 1940 },
+  { rank:  969, name: "Zora",          sex: "F", peakDecade: 2020 },
+  { rank:  970, name: "Elia",          sex: "F", peakDecade: 2010 },
+  { rank:  971, name: "Leylani",       sex: "F", peakDecade: 2020 },
+  { rank:  972, name: "Ashlyn",        sex: "F", peakDecade: 2000 },
+  { rank:  973, name: "Jianna",        sex: "F", peakDecade: 2020 },
+  { rank:  974, name: "Tru",           sex: "F", peakDecade: 2020 },
+  { rank:  975, name: "Arden",         sex: "F", peakDecade: 2010 },
+  { rank:  976, name: "Marleigh",      sex: "F", peakDecade: 2010 },
+  { rank:  977, name: "Novalee",       sex: "F", peakDecade: 2020 },
+  { rank:  978, name: "Kori",          sex: "F", peakDecade: 2010 },
+  { rank:  979, name: "Roselyn",       sex: "F", peakDecade: 2010 },
+  { rank:  980, name: "Ashlynn",       sex: "F", peakDecade: 2000 },
+  { rank:  981, name: "Cordelia",      sex: "F", peakDecade: 2010 },
+  { rank:  982, name: "Khadija",       sex: "F", peakDecade: 2010 },
+  { rank:  983, name: "Akira",         sex: "F", peakDecade: 2000 },
+  { rank:  984, name: "Arely",         sex: "F", peakDecade: 2000 },
+  { rank:  985, name: "Kamiyah",       sex: "F", peakDecade: 2010 },
+  { rank:  986, name: "Skyla",         sex: "F", peakDecade: 2010 },
+  { rank:  987, name: "Adalee",        sex: "F", peakDecade: 2010 },
+  { rank:  988, name: "Addilyn",       sex: "F", peakDecade: 2010 },
+  { rank:  989, name: "Karter",        sex: "F", peakDecade: 2010 },
+  { rank:  990, name: "Laken",         sex: "F", peakDecade: 1990 },
+  { rank:  991, name: "Lisa",          sex: "F", peakDecade: 1960 },
+  { rank:  992, name: "Brylee",        sex: "F", peakDecade: 2010 },
+  { rank:  993, name: "Jazmine",       sex: "F", peakDecade: 2000 },
+  { rank:  994, name: "Kaiya",         sex: "F", peakDecade: 2000 },
+  { rank:  995, name: "Annika",        sex: "F", peakDecade: 2000 },
+  { rank:  996, name: "Jaslyn",        sex: "F", peakDecade: 2000 },
+  { rank:  997, name: "Scout",         sex: "F", peakDecade: 2010 },
+  { rank:  998, name: "Simone",        sex: "F", peakDecade: 1990 },
+  { rank:  999, name: "Corinne",       sex: "F", peakDecade: 1990 },
+  { rank: 1000, name: "Harmoni",       sex: "F", peakDecade: 2010 }
+];
+
+// =========================================================================
+// GAME STATE
+// =========================================================================
+const MAX_GUESSES = 6;
+let answer = null;
+let guesses = [];
+let activeSuggestion = -1;
+let currentSuggestions = [];
+
+// Session-only stats. TODO: persist between sessions (localStorage is sufficient
+// — no server required; just JSON.stringify/parse the object on read/write).
+const stats = {
+  played: 0,
+  won: 0,
+  totalGuesses: 0,
+};
+
+function recordGameResult(won) {
+  stats.played++;
+  if (won) stats.won++;
+  stats.totalGuesses += guesses.length;
+}
+
+function openStatsModal() {
+  document.getElementById("stat-played").textContent = stats.played;
+  document.getElementById("stat-won").textContent = stats.won;
+  document.getElementById("stat-winrate").textContent = stats.played > 0
+    ? Math.round(100 * stats.won / stats.played) + "%"
+    : "—";
+  document.getElementById("stat-avg").textContent = stats.played > 0
+    ? (stats.totalGuesses / stats.played).toFixed(1)
+    : "—";
+  document.getElementById("stats-modal").classList.add("open");
+}
+
+function closeStatsModal() {
+  document.getElementById("stats-modal").classList.remove("open");
+}
+
+function openArchiveModal() {
+  document.getElementById("archive-modal").classList.add("open");
+}
+function closeArchiveModal() {
+  document.getElementById("archive-modal").classList.remove("open");
+}
+
+// =========================================================================
+// COMPARISON LOGIC
+// =========================================================================
+function compareGuess(guess) {
+  const cells = [];
+
+  // Sex
+  if (guess.sex === answer.sex) {
+    cells.push({ text: guess.sex === "M" ? "Boy" : "Girl", kind: "exact" });
+  } else {
+    cells.push({ text: guess.sex === "M" ? "Boy" : "Girl", kind: "none" });
+  }
+
+  // First letter
+  const gL = guess.name[0].toUpperCase();
+  const aL = answer.name[0].toUpperCase();
+  if (gL === aL) {
+    cells.push({ text: gL, kind: "exact" });
+  } else {
+    const arrow = gL < aL ? "↓" : "↑";
+    const kind = Math.abs(gL.charCodeAt(0) - aL.charCodeAt(0)) <= 3 ? "close" : "none";
+    cells.push({ text: gL + " " + arrow, kind: kind });
+  }
+
+  // Length
+  const gLen = guess.name.length;
+  const aLen = answer.name.length;
+  if (gLen === aLen) {
+    cells.push({ text: String(gLen), kind: "exact" });
+  } else {
+    const arrow = gLen < aLen ? "↑" : "↓";
+    const kind = Math.abs(gLen - aLen) <= 2 ? "close" : "none";
+    cells.push({ text: gLen + " " + arrow, kind: kind });
+  }
+
+  // Peak Decade (the decade in which this name had the most US births)
+  const gP = guess.peakDecade;
+  const aP = answer.peakDecade;
+  if (gP === aP) {
+    cells.push({ text: gP + "s", kind: "exact" });
+  } else {
+    // ↑ means the answer's peak is LATER than the guess's peak
+    // ↓ means the answer's peak is EARLIER
+    const arrow = gP < aP ? "↑" : "↓";
+    const diff = Math.abs(gP - aP);
+    const kind = diff <= 20 ? "close" : "none";
+    cells.push({ text: gP + "s " + arrow, kind: kind });
+  }
+
+  // Rank (within their respective gender list)
+  const gR = guess.rank;
+  const aR = answer.rank;
+  if (gR === aR && guess.sex === answer.sex) {
+    cells.push({ text: "#" + gR, kind: "exact" });
+  } else {
+    // Use directional arrow based on rank number (lower rank = more popular)
+    const arrow = gR < aR ? "↓" : "↑";
+    const kind = Math.abs(gR - aR) <= 25 ? "close" : "none";
+    cells.push({ text: "#" + gR + " " + arrow, kind: kind });
+  }
+
+  return { name: guess.name, sex: guess.sex, cells: cells };
+}
+
+// =========================================================================
+// RENDERING
+// =========================================================================
+// Track which guesses are already painted in the DOM so we only animate new ones.
+let renderedCount = 0;
+
+function buildEmptyGrid() {
+  const container = document.getElementById("guesses");
+  container.innerHTML = "";
+  for (let r = 0; r < MAX_GUESSES; r++) {
+    for (let c = 0; c < 6; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell empty" + (c === 0 ? " name-cell" : "");
+      const span = document.createElement("span");
+      span.className = "cell-text";
+      cell.appendChild(span);
+      container.appendChild(cell);
+    }
+  }
+  renderedCount = 0;
+}
+
+function applyGuessToRow(allCells, gi, g, animate) {
+  const rowStart = gi * 6;
+
+  // First: set text content for every cell in the row (still hidden via opacity)
+  allCells[rowStart].querySelector('.cell-text').textContent = g.name;
+  g.cells.forEach((c, i) => {
+    allCells[rowStart + 1 + i].querySelector('.cell-text').textContent = c.text;
+  });
+
+  const apply = () => {
+    // Name cell (appears immediately, no delay)
+    const nameCell = allCells[rowStart];
+    const nameSpan = nameCell.querySelector('.cell-text');
+    nameCell.classList.remove('empty');
+    nameCell.classList.add(g.sex === 'M' ? 'boy' : 'girl');
+    if (animate) {
+      // Tether name cell to the same durations as the result cells
+      nameSpan.style.animation = 'textFade 1.00s 0s ease-out forwards';
+      nameCell.style.transitionDuration = '1.00s';
+      // Once the reveal settles, drop the inline transition so the hover
+      // (reverse-fill, like a button) animates snappily instead of over 1s.
+      setTimeout(() => { nameCell.style.transition = ''; }, 1300);
+    } else {
+      nameSpan.style.opacity = '1';
+    }
+
+    // Reveal pace: steady 0.24s rhythm between cells. Text fades a touch
+    // quicker than bg, with its own ease-out curve.
+    const TEXT_DELAYS    = [0.25, 0.49, 0.73, 0.97, 1.21]; // constant 0.24 gap
+    const TEXT_DURATIONS = [1.00, 1.00, 1.00, 1.00, 1.00];
+    const BG_DURATIONS   = [1.00, 1.00, 1.00, 1.00, 1.00];
+
+    g.cells.forEach((c, i) => {
+      const cell = allCells[rowStart + 1 + i];
+      const span = cell.querySelector('.cell-text');
+      if (animate) {
+        const delay = TEXT_DELAYS[i];
+        // Text uses @keyframes textFade so it can start at opacity 0.25
+        span.style.animation = `textFade ${TEXT_DURATIONS[i]}s ${delay}s ease-out forwards`;
+        // Background still uses transition (white → tinted)
+        cell.style.transitionDelay    = delay + 's';
+        cell.style.transitionDuration = BG_DURATIONS[i] + 's';
+      } else {
+        span.style.opacity = '1';
+      }
+      cell.classList.remove('empty');
+      cell.classList.add(c.kind);
+    });
+  };
+
+  if (animate) {
+    // Two rAFs so the freshly-set text content is in place before the
+    // transitions fire (some browsers batch the first paint).
+    requestAnimationFrame(() => requestAnimationFrame(apply));
+  } else {
+    // Apply changes without transitions for previously-rendered rows
+    for (let c = 0; c < 6; c++) {
+      allCells[rowStart + c].classList.add('instant');
+    }
+    apply();
+    // Force a reflow, then drop .instant so future transitions still work
+    document.getElementById("guesses").offsetHeight;
+    requestAnimationFrame(() => {
+      for (let c = 0; c < 6; c++) {
+        allCells[rowStart + c].classList.remove('instant');
+      }
+    });
+  }
+}
+
+function renderGuesses() {
+  const container = document.getElementById("guesses");
+
+  // (Re)build scaffold on first call or whenever state has been reset
+  if (container.children.length === 0 || renderedCount > guesses.length) {
+    buildEmptyGrid();
+  }
+
+  // Paint any guesses that haven't been painted yet
+  while (renderedCount < guesses.length) {
+    const isLast = renderedCount === guesses.length - 1;
+    applyGuessToRow(container.children, renderedCount, guesses[renderedCount], isLast);
+    renderedCount++;
+  }
+
+  // Dot tracker — one circle per slot, filled by gender of the ANSWER
+  const counterEl = document.getElementById("counter");
+  counterEl.innerHTML = "";
+  for (let i = 0; i < MAX_GUESSES; i++) {
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    counterEl.appendChild(dot);
+    if (i < guesses.length) {
+      const cls = answer.sex === "M" ? "boy" : "girl";
+      const isLatestDot = i === guesses.length - 1;
+      if (isLatestDot) {
+        // Sync the new dot with the gender cell's bg colour appearing
+        setTimeout(() => dot.classList.add(cls), 900);
+      } else {
+        dot.classList.add(cls);
+      }
+    }
+  }
+}
+
+function showStatus(won) {
+  recordGameResult(won);
+
+  // Populate the dynamic header of the reveal scene from `answer`.
+  const eyebrow = document.getElementById("reveal-eyebrow");
+  eyebrow.textContent = won ? "You got it!" : "Out of guesses — today's name was";
+  eyebrow.className = "reveal-eyebrow " + (won ? "win" : "lose");
+
+  const nameEl = document.getElementById("reveal-name");
+  nameEl.textContent = answer.name;
+  nameEl.className = "reveal-name " + (answer.sex === "M" ? "boy" : "girl");
+
+  document.getElementById("reveal-meta").innerHTML =
+    "the <span class='rank'>#" + answer.rank + "</span> " +
+    (answer.sex === "M" ? "boys'" : "girls'") + " name of 2025";
+
+  document.getElementById("guess-input").disabled = true;
+  document.getElementById("submit-btn").disabled = true;
+  hideSug();
+
+  const r = document.getElementById("reveal");
+  r.classList.add("open");
+  r.setAttribute("aria-hidden", "false");
+  r.scrollTop = 0;
+}
+
+function hideReveal() {
+  const r = document.getElementById("reveal");
+  r.classList.remove("open");
+  r.setAttribute("aria-hidden", "true");
+}
+
+// =========================================================================
+// AUTOCOMPLETE
+// =========================================================================
+// Show/hide the dropdown, keeping the input shell's "open" state in sync so it
+// can square its bottom corners and merge with the list into one capsule.
+function showSug() {
+  const b = document.getElementById("suggestions");
+  b.style.display = "block";
+  document.querySelector(".input-shell").classList.add("open");
+}
+function hideSug() {
+  const b = document.getElementById("suggestions");
+  b.style.display = "none";
+  document.querySelector(".input-shell").classList.remove("open");
+}
+
+function updateSuggestions() {
+  const input = document.getElementById("guess-input");
+  const box = document.getElementById("suggestions");
+  const q = input.value.trim().toLowerCase();
+
+  if (!q) {
+    hideSug();
+    currentSuggestions = [];
+    return;
+  }
+
+  // Show only names that START with the query, sorted alphabetically.
+  // Once a guess has revealed the answer's sex, restrict the pool to that sex.
+  // Also strip out any name+sex already used as a guess.
+  const used = new Set(guesses.map(g => g.name.toLowerCase() + '|' + g.sex));
+  const basePool = guesses.length > 0 ? NAMES.filter(n => n.sex === answer.sex) : NAMES;
+  const pool = basePool.filter(n => !used.has(n.name.toLowerCase() + '|' + n.sex));
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  // Show every match. The dropdown's capped height (~4 rows) + overflow scroll keep
+  // it short enough to open over the ad slot rather than the board.
+  const matches = pool.filter(n => n.name.toLowerCase().startsWith(q)).sort(byName);
+
+  currentSuggestions = matches;
+  activeSuggestion = -1;
+
+  if (matches.length === 0) {
+    hideSug();
+    return;
+  }
+
+  box.innerHTML = "";
+  matches.forEach((m, i) => {
+    const item = document.createElement("div");
+    item.className = "suggestion " + (m.sex === "M" ? "boy" : "girl");
+    item.innerHTML = "<span class='name'>" + m.name + "</span><span class='meta'>" +
+                     (m.sex === "M" ? "Boy" : "Girl") + "</span>";
+    // pointerdown (not mousedown) so touch taps register immediately instead of
+    // waiting on synthesized mouse events; preventDefault keeps the input focused
+    // (caret + keyboard stay) on both mouse and touch.
+    item.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      input.value = m.name;
+      hideSug();
+      submitGuess(m);
+    });
+    box.appendChild(item);
+  });
+  showSug();
+}
+
+function highlightSuggestion() {
+  const items = document.querySelectorAll(".suggestion");
+  items.forEach((el, i) => {
+    const on = i === activeSuggestion;
+    el.classList.toggle("active", on);
+    if (on) el.scrollIntoView({ block: "nearest" });
+  });
+}
+
+// =========================================================================
+// SUBMIT
+// =========================================================================
+function shakeInput() {
+  const shell = document.querySelector('.input-shell');
+  if (!shell) return;
+  shell.classList.remove('shake');
+  void shell.offsetWidth; // reflow so the animation can replay
+  shell.classList.add('shake');
+}
+
+function submitGuess(explicit) {
+  const input = document.getElementById("guess-input");
+  const feedback = document.getElementById("feedback");
+  const val = input.value.trim();
+
+  if (!val) return;
+
+  // `explicit` is a real name object when called from a suggestion click; when the
+  // Guess button fires it, the click event lands here instead — ignore it and fall
+  // back to matching the typed text.
+  const match = (explicit && explicit.name)
+    ? explicit
+    : NAMES.find(n => n.name.toLowerCase() === val.toLowerCase());
+  if (!match) {
+    shakeInput();
+    return;
+  }
+
+  // Block duplicate guesses
+  const isDup = guesses.some(g =>
+    g.name.toLowerCase() === match.name.toLowerCase() && g.sex === match.sex
+  );
+  if (isDup) {
+    shakeInput();
+    return;
+  }
+
+  feedback.textContent = "";
+  guesses.push(compareGuess(match));
+  input.value = "";
+  hideSug();
+  renderGuesses();
+
+  const won = match.name.toLowerCase() === answer.name.toLowerCase() && match.sex === answer.sex;
+  // Reveal: last cell starts 1.21s, bg done ~2.21s. Add a beat.
+  const REVEAL_MS = 2500;
+  if (won) {
+    setTimeout(() => showStatus(true), REVEAL_MS);
+  } else if (guesses.length >= MAX_GUESSES) {
+    setTimeout(() => showStatus(false), REVEAL_MS);
+  }
+}
+
+// =========================================================================
+// NEW GAME
+// =========================================================================
+function newGame() {
+  answer = NAMES[Math.floor(Math.random() * NAMES.length)];
+  guesses = [];
+  hideReveal();
+  document.getElementById("feedback").textContent = "";
+  const input = document.getElementById("guess-input");
+  input.disabled = false;
+  input.value = "";
+  document.getElementById("submit-btn").disabled = false;
+  hideSug();
+  renderGuesses();
+  input.focus();
+  // Uncomment to debug:
+  // console.log("Answer:", answer);
+}
+
+// =========================================================================
+// EVENT BINDINGS
+// =========================================================================
+document.getElementById("submit-btn").addEventListener("click", submitGuess);
+// Archive — opens a preview modal explaining the planned past-puzzles archive, so
+// testers know what the button is for. Wire to the real archive later.
+// "New game" is intentionally gone: the final game is daily, and newGame() still
+// runs on load, so a reload starts a fresh game.
+document.getElementById("archive-btn").addEventListener("click", openArchiveModal);
+
+const input = document.getElementById("guess-input");
+input.addEventListener("input", updateSuggestions);
+input.addEventListener("keydown", (e) => {
+  const box = document.getElementById("suggestions");
+  if (e.key === "Enter") {
+    let chosen = null;
+    if (activeSuggestion >= 0 && currentSuggestions[activeSuggestion]) {
+      chosen = currentSuggestions[activeSuggestion];
+      input.value = chosen.name;
+      hideSug();
+    }
+    submitGuess(chosen);
+    e.preventDefault();
+  } else if (e.key === "ArrowDown") {
+    if (currentSuggestions.length > 0) {
+      activeSuggestion = Math.min(activeSuggestion + 1, currentSuggestions.length - 1);
+      highlightSuggestion();
+      e.preventDefault();
+    }
+  } else if (e.key === "ArrowUp") {
+    if (currentSuggestions.length > 0) {
+      activeSuggestion = Math.max(activeSuggestion - 1, 0);
+      highlightSuggestion();
+      e.preventDefault();
+    }
+  } else if (e.key === "Escape") {
+    hideSug();
+  }
+});
+input.addEventListener("blur", () => {
+  // Delay so suggestion click can fire
+  setTimeout(() => {
+    hideSug();
+  }, 150);
+});
+
+// Stats modal bindings
+document.getElementById("stats-btn").addEventListener("click", openStatsModal);
+document.getElementById("stats-close").addEventListener("click", closeStatsModal);
+document.getElementById("stats-modal").addEventListener("click", (e) => {
+  if (e.target.id === "stats-modal") closeStatsModal();
+});
+
+// Archive modal bindings (mirror the stats modal)
+document.getElementById("archive-close").addEventListener("click", closeArchiveModal);
+document.getElementById("archive-modal").addEventListener("click", (e) => {
+  if (e.target.id === "archive-modal") closeArchiveModal();
+});
+
+// Esc closes whichever modal is open
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (document.getElementById("stats-modal").classList.contains("open")) closeStatsModal();
+  if (document.getElementById("archive-modal").classList.contains("open")) closeArchiveModal();
+});
+
+// Reveal scene bindings
+// The corner X dismisses the overlay to reveal the finished board behind it.
+document.getElementById("reveal-close").addEventListener("click", hideReveal);
+// Stats link opens the existing modal (which sits above the scene at z-index 300).
+document.getElementById("reveal-stats-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  openStatsModal();
+});
+// Placeholders — wire to the real backend in the final version.
+document.getElementById("reveal-archive-link").addEventListener("click", (e) => { e.preventDefault(); openArchiveModal(); });
+document.getElementById("reveal-create").addEventListener("click", (e) => e.preventDefault());
+
+// Start
+newGame();
+</script>
+</body>
+</html>
